@@ -12,11 +12,11 @@ const icons = {
 
 export default function Alert({ message, severity = 'low', onDismiss, className = '' }) {
   return (
-    <div className={`flex items-start gap-3 p-4 rounded-lg border ${severityStyles[severity] || severityStyles.low} ${className}`}>
-      <span className="text-lg flex-shrink-0 mt-0.5">{icons[severity]}</span>
-      <p className="text-sm flex-1">{message}</p>
+    <div className={`flex items-start gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-xl border ${severityStyles[severity] || severityStyles.low} ${className}`}>
+      <span className="text-sm sm:text-base flex-shrink-0 mt-0.5">{icons[severity]}</span>
+      <p className="text-xs sm:text-sm flex-1 leading-snug">{message}</p>
       {onDismiss && (
-        <button onClick={onDismiss} className="text-text-muted hover:text-text-primary transition-colors flex-shrink-0">
+        <button onClick={onDismiss} className="text-text-muted hover:text-text-primary transition-colors flex-shrink-0 text-xs sm:text-sm">
           ✕
         </button>
       )}

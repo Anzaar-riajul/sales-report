@@ -234,16 +234,16 @@ export default function Dashboard() {
 
       {/* ─── ALERTS ─── */}
       {alerts.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1 animate-fade-in">
+        <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1 animate-fade-in">
           {alerts.slice(0, 4).map((alert, i) => (
-            <div key={i} className="flex-shrink-0 min-w-[200px] sm:min-w-[240px]">
+            <div key={i} className="flex-shrink-0 min-w-[160px] sm:min-w-[220px] max-w-[220px] sm:max-w-none">
               <Alert message={alert.message} severity={alert.severity} />
             </div>
           ))}
           {alerts.length > 4 && (
             <button onClick={() => navigate('/alerts')}
-              className="flex-shrink-0 px-3 py-2 text-xs text-accent-gold hover:underline bg-white rounded-xl border border-border/60 shadow-sm hover:shadow-md transition-all">
-              +{alerts.length - 4} more
+              className="flex-shrink-0 px-2 sm:px-3 py-2 text-xs text-accent-gold hover:underline bg-white rounded-xl border border-border/60 shadow-sm hover:shadow-md transition-all">
+              +{alerts.length - 4}
             </button>
           )}
         </div>
