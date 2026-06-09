@@ -45,10 +45,10 @@ function ProductsPerOrderChart({ reports }) {
 
   return (
     <div className="bg-white/80 backdrop-blur-xl border border-border/40 rounded-2xl p-4 shadow-sm relative overflow-hidden">
-      <div className="absolute -top-6 -right-6 w-16 h-16 bg-gradient-to-br from-accent-teal/8 to-transparent rounded-full" />
+      <div className="absolute -top-6 -right-6 w-16 h-16 bg-gradient-to-br from-[#6366F1]/8 to-transparent rounded-full" />
       <p className="text-[10px] text-text-muted uppercase tracking-wider font-medium mb-2 relative">Products Per Order</p>
       <p className="text-[9px] text-text-muted/60 mb-3 relative">Average products per order over time</p>
-      <RollingLineChart data={data} color="#0D9488" gradientId="ppoGrad" />
+      <RollingLineChart data={data} color="#6366F1" gradientId="ppoGrad" />
     </div>
   );
 }

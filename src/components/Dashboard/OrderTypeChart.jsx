@@ -2,10 +2,10 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { ChartSkeleton } from '../UI/Loader';
 import { formatNumber } from '../../utils/formatters';
 
-const COLORS = ['#C9A84C', '#0D9488'];
+const COLORS = ['#C9A84C', '#6366F1'];
 const GRADIENTS = [
-  { start: '#C9A84C', end: '#E8C96A' },
-  { start: '#0D9488', end: '#2DD4BF' },
+  { start: '#C9A84C', end: '#DFC16A' },
+  { start: '#6366F1', end: '#A5B4FC' },
 ];
 
 function OrderTooltip({ active, payload }) {

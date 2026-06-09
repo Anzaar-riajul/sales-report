@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getReports, saveReport, getReportByDate } from '../firebase/reports';
+import { getReports, saveReport, getReportByDate, deleteReport as firebaseDeleteReport } from '../firebase/reports';
 import { setCache, getCache, isCacheStale } from '../utils/cache';
 
 const CACHE_KEY = 'reports';
@@ -69,5 +69,11 @@ export function useReports() {
     return result;
   }, []);
 
-  return { reports, loading, error, refetch: () => loadReports(true), addReport, getReportByDateString };
+  const removeReport = useCallback(async (reportId, products, dateString) => {
+    await firebaseDeleteReport(reportId, products, dateString);
+    setCache(CACHE_KEY, null, 0);
+    await loadReports(true);
+  }, []);
+
+  return { reports, loading, error, refetch: () => loadReports(true), addReport, getReportByDateString, removeReport };
 }

@@ -354,7 +354,7 @@ export default function Dashboard() {
           </div>
           <h3 className="font-semibold text-xl text-text-primary mb-2">No Reports Yet</h3>
           <p className="text-text-muted text-sm mb-6">Paste your first daily order report to start tracking sales.</p>
-          <button onClick={() => navigate('/input')} className="btn-primary text-sm">
+          <button onClick={() => navigate('/settings')} className="btn-primary text-sm">
             Paste Your First Report
           </button>
         </div>

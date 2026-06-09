@@ -6,11 +6,11 @@ import DetailModal from '../UI/DetailModal';
 
 const THEME = {
   orders: { accent: '#C9A84C', bg: 'bg-[#C9A84C]', light: 'from-[#C9A84C]/10 via-white to-white', text: 'text-accent-gold', label: 'Total Orders', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
-  value: { accent: '#0D9488', bg: 'bg-[#0D9488]', light: 'from-[#0D9488]/10 via-white to-white', text: 'text-accent-teal', label: 'Order Value', icon: 'M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6' },
-  aov: { accent: '#3B82F6', bg: 'bg-[#3B82F6]', light: 'from-[#3B82F6]/10 via-white to-white', text: 'text-blue-500', label: 'Avg Order Value', icon: 'M12 20V10M18 20V4M6 20v-4' },
+  value: { accent: '#6366F1', bg: 'bg-[#6366F1]', light: 'from-[#6366F1]/10 via-white to-white', text: 'text-[#6366F1]', label: 'Order Value', icon: 'M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6' },
+  aov: { accent: '#14B8A6', bg: 'bg-[#14B8A6]', light: 'from-[#14B8A6]/10 via-white to-white', text: 'text-[#14B8A6]', label: 'Avg Order Value', icon: 'M12 20V10M18 20V4M6 20v-4' },
   advance: { accent: '#C9A84C', bg: 'bg-[#C9A84C]', light: 'from-[#C9A84C]/10 via-white to-white', text: 'text-accent-gold', label: 'Total Advance', icon: 'M12 2v20M17 7l-5-5-5 5' },
-  customize: { accent: '#E11D48', bg: 'bg-[#E11D48]', light: 'from-[#E11D48]/10 via-white to-white', text: 'text-accent-rose', label: 'Customize Rate', icon: 'M4 7V4h16v3M9 20h6M12 4v16' },
-  products: { accent: '#0D9488', bg: 'bg-[#0D9488]', light: 'from-[#0D9488]/10 via-white to-white', text: 'text-accent-teal', label: 'Total Products', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
+  customize: { accent: '#F43F5E', bg: 'bg-[#F43F5E]', light: 'from-[#F43F5E]/10 via-white to-white', text: 'text-[#F43F5E]', label: 'Customize Rate', icon: 'M4 7V4h16v3M9 20h6M12 4v16' },
+  products: { accent: '#6366F1', bg: 'bg-[#6366F1]', light: 'from-[#6366F1]/10 via-white to-white', text: 'text-[#6366F1]', label: 'Total Products', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
 };
 
 function AnimatedValue({ value }) {

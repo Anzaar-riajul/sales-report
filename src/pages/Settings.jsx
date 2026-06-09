@@ -5,6 +5,7 @@ import { useReports } from '../hooks/useReports';
 import { getSignupRequests, approveRequest, rejectRequest, addUserDirectly, getAllUsers, updateUserRole, removeUser } from '../firebase/auth';
 import DetailModal from '../components/UI/DetailModal';
 import RangePDF from '../components/Dashboard/RangePDF';
+import DataEntryTab from '../components/Settings/DataEntryTab';
 import { formatBDT, formatNumber } from '../utils/formatters';
 import { subDays, format } from 'date-fns';
 
@@ -430,15 +431,16 @@ export default function Settings() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-bg-elevated/60 p-1 rounded-xl border border-border/30">
+      <div className="flex gap-1 bg-bg-elevated/60 p-1 rounded-xl border border-border/30 overflow-x-auto scrollbar-none">
         {[
           { key: 'users', icon: '👥', label: 'Users', count: users.length },
           { key: 'requests', icon: '📩', label: 'Requests', count: requests.length },
           { key: 'add', icon: '➕', label: 'Add User' },
+          { key: 'entry', icon: '📝', label: 'Data Entry' },
           { key: 'export', icon: '📥', label: 'Export' },
         ].map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
-            className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-[10px] font-semibold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-[10px] font-semibold transition-all whitespace-nowrap ${
               tab === t.key ? 'bg-white text-text-primary shadow-sm' : 'text-text-muted hover:text-text-primary'
             }`}>
             <span className="text-xs">{t.icon}</span>
@@ -566,6 +568,11 @@ export default function Settings() {
       {/* Export Tab */}
       {tab === 'export' && (
         <ExportTab />
+      )}
+
+      {/* Data Entry Tab */}
+      {tab === 'entry' && (
+        <DataEntryTab />
       )}
 
       {/* Account */}

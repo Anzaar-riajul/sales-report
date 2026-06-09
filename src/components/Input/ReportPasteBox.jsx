@@ -13,11 +13,19 @@ function PreviewStat({ label, value, color = 'gold', large = false }) {
   );
 }
 
-export default function ReportPasteBox({ onSave, onPreview, existingReport, saving, clearTrigger }) {
+export default function ReportPasteBox({ onSave, onPreview, existingReport, saving, clearTrigger, initialText }) {
   const [rawText, setRawText] = useState('');
   const [parsed, setParsed] = useState(null);
   const [error, setError] = useState(null);
   const [focused, setFocused] = useState(false);
+
+  useEffect(() => {
+    if (initialText) {
+      setRawText(initialText);
+      setParsed(null);
+      setError(null);
+    }
+  }, [initialText]);
 
   useEffect(() => {
     if (clearTrigger) {

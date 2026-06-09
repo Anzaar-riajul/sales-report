@@ -1,4 +1,4 @@
-import { collection, query, orderBy, getDocs, doc, getDoc, updateDoc, setDoc, Timestamp, writeBatch, where, arrayUnion, increment } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, doc, getDoc, updateDoc, setDoc, Timestamp, writeBatch, where, arrayUnion, arrayRemove, increment } from 'firebase/firestore';
 import { db } from './config';
 import { categorizeProduct } from '../utils/categorize';
 
@@ -178,7 +178,20 @@ export async function getCategoryMappings() {
     cachedCategoryMappings = mappings;
     return mappings;
   } catch {
-    // Firestore unavailable — save still works, just no auto-categorization
     return cachedCategoryMappings || {};
   }
+}
+
+export async function deleteReport(reportId, products, dateString) {
+  const batch = writeBatch(db);
+  batch.delete(doc(db, REPORTS_COLLECTION, reportId));
+  for (const product of products) {
+    const productRef = doc(db, PRODUCTS_COLLECTION, product.name);
+    batch.update(productRef, {
+      totalQuantitySold: increment(-(product.quantity || 0)),
+      totalAppearances: increment(-1),
+      dailyHistory: arrayRemove({ date: dateString, quantity: product.quantity }),
+    });
+  }
+  await withRetry(() => batch.commit());
 }

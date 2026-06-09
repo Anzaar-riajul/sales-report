@@ -231,10 +231,10 @@ export default function Profile() {
               <span className="text-base group-hover:scale-110 transition-transform">📊</span>
               <span className="text-[11px] font-semibold text-text-primary">Dashboard</span>
             </button>
-            <button onClick={() => navigate('/input')}
+            <button onClick={() => navigate('/settings')}
               className="flex items-center gap-2.5 p-3 bg-gradient-to-r from-accent-teal/5 to-emerald-400/5 border border-accent-teal/15 rounded-xl hover:from-accent-teal/10 hover:to-emerald-400/10 hover:border-accent-teal/25 hover:shadow-md transition-all duration-300 group">
-              <span className="text-base group-hover:scale-110 transition-transform">📝</span>
-              <span className="text-[11px] font-semibold text-text-primary">Entry</span>
+              <span className="text-base group-hover:scale-110 transition-transform">⚙</span>
+              <span className="text-[11px] font-semibold text-text-primary">Settings</span>
             </button>
             <button onClick={() => navigate('/products')}
               className="flex items-center gap-2.5 p-3 bg-gradient-to-r from-violet-400/5 to-purple-400/5 border border-violet-400/15 rounded-xl hover:from-violet-400/10 hover:to-purple-400/10 hover:border-violet-400/25 hover:shadow-md transition-all duration-300 group">

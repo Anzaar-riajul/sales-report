@@ -5,7 +5,6 @@ import { createSignupRequest } from './firebase/auth';
 import Layout from './components/Layout/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
-import DailyInput from './pages/DailyInput';
 import Analytics from './pages/Analytics';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
@@ -101,11 +100,6 @@ export default function App() {
       <Route path="/" element={
         <ProtectedRoute user={user} allowed={allowed} loading={loading} role={role}>
           <Dashboard />
-        </ProtectedRoute>
-      } />
-      <Route path="/input" element={
-        <ProtectedRoute user={user} allowed={allowed} loading={loading} role={role}>
-          <DailyInput />
         </ProtectedRoute>
       } />
       <Route path="/analytics" element={

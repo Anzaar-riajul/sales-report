@@ -8,9 +8,9 @@ import DetailModal from '../UI/DetailModal';
 
 const CARD_THEMES = {
   top: { accent: '#C9A84C', label: 'Top Products', icon: '🏆', subtitle: 'Best sellers by quantity' },
-  today: { accent: '#0D9488', label: "Today's Products", icon: '📦', subtitle: "Products from today's report" },
-  new: { accent: '#3B82F6', label: 'New This Week', icon: '✨', subtitle: 'Recently added products' },
-  dead: { accent: '#E11D48', label: 'Dead Stock', icon: '⚠', subtitle: 'No sales in 7+ days' },
+  today: { accent: '#6366F1', label: "Today's Products", icon: '📦', subtitle: "Products from today's report" },
+  new: { accent: '#14B8A6', label: 'New This Week', icon: '✨', subtitle: 'Recently added products' },
+  dead: { accent: '#F43F5E', label: 'Dead Stock', icon: '⚠', subtitle: 'No sales in 7+ days' },
 };
 
 function MiniChart({ data, color }) {
@@ -202,16 +202,17 @@ export default function ProductsOverview({ products, reports, latestReport }) {
         {/* Dead Stock */}
         <MiniSection title="Dead Stock" type="dead" count={deadStock.length} onClick={() => openModal('dead', deadStock)}>
           {deadStock.length === 0 ? (
-            <p className="text-[10px] text-accent-teal py-2 text-center">✓ No dead stock</p>
+            <p className="text-[10px] text-accent-gold py-2 text-center">✓ No dead stock</p>
           ) : (
             <div className="space-y-0.5">
               {deadStock.map((p, i) => (
                 <div key={p.name} className="flex items-center justify-between py-1">
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="w-4 h-4 rounded-md bg-accent-rose/10 text-accent-rose text-[8px] font-mono flex items-center justify-center">{i + 1}</span>
-                    <span className="text-[11px] font-medium text-text-primary truncate">{p.name}</span>
-                  </div>
-                  <span className="text-[10px] font-mono text-accent-rose font-semibold">{p.totalQuantitySold || 0} sold</span>
+                      <span className="w-4 h-4 rounded-md text-[8px] font-mono flex items-center justify-center"
+                        style={{ background: `${CARD_THEMES.dead.accent}15`, color: CARD_THEMES.dead.accent }}>{i + 1}</span>
+                      <span className="text-[11px] font-medium text-text-primary truncate">{p.name}</span>
+                    </div>
+                    <span className="text-[10px] font-mono font-semibold" style={{ color: CARD_THEMES.dead.accent }}>{p.totalQuantitySold || 0} sold</span>
                 </div>
               ))}
             </div>
@@ -229,10 +230,11 @@ export default function ProductsOverview({ products, reports, latestReport }) {
                   {todayProducts.map((p, i) => (
                     <div key={p.name} className="flex items-center justify-between py-1">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="w-4 h-4 rounded-md bg-accent-teal/10 text-accent-teal text-[8px] font-mono flex items-center justify-center">{i + 1}</span>
+                        <span className="w-4 h-4 rounded-md text-[8px] font-mono flex items-center justify-center"
+                        style={{ background: `${CARD_THEMES.today.accent}15`, color: CARD_THEMES.today.accent }}>{i + 1}</span>
                         <span className="text-[11px] font-medium text-text-primary truncate">{p.name}</span>
                       </div>
-                      <span className="text-[10px] font-mono text-accent-teal font-semibold">×{p.quantity}</span>
+                      <span className="text-[10px] font-mono font-semibold" style={{ color: CARD_THEMES.today.accent }}>×{p.quantity}</span>
                     </div>
                   ))}
                 </div>
@@ -247,10 +249,11 @@ export default function ProductsOverview({ products, reports, latestReport }) {
                   {newTop.map((p, i) => (
                     <div key={p.name} className="flex items-center justify-between py-1">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="w-4 h-4 rounded-md bg-blue-500/10 text-blue-500 text-[8px] font-mono flex items-center justify-center">{i + 1}</span>
-                        <span className="text-[11px] font-medium text-text-primary truncate">{p.name}</span>
-                      </div>
-                      <span className="text-[10px] font-mono text-blue-500 font-semibold">{p.totalQuantitySold || 0} sold</span>
+                      <span className="w-4 h-4 rounded-md text-[8px] font-mono flex items-center justify-center"
+                        style={{ background: `${CARD_THEMES.new.accent}15`, color: CARD_THEMES.new.accent }}>{i + 1}</span>
+                      <span className="text-[11px] font-medium text-text-primary truncate">{p.name}</span>
+                    </div>
+                    <span className="text-[10px] font-mono font-semibold" style={{ color: CARD_THEMES.new.accent }}>{p.totalQuantitySold || 0} sold</span>
                     </div>
                   ))}
                 </div>

@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useReports } from '../hooks/useReports';
 import { useAuth } from '../hooks/useAuth';
 import ReportPasteBox from '../components/Input/ReportPasteBox';
@@ -69,14 +70,25 @@ function StepIndicator({ step }) {
 }
 
 export default function DailyInput() {
-  const { addReport, getReportByDateString, reports, loading } = useReports();
+  const { addReport, getReportByDateString, reports, loading, removeReport } = useReports();
   const { isAdmin } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState(null);
   const [existingReport, setExistingReport] = useState(null);
   const [currentParsed, setCurrentParsed] = useState(null);
   const clearTrigger = useRef(null);
   const [step, setStep] = useState(0);
+
+  const editRawText = location.state?.editRawText || null;
+
+  // Clear location state after reading it
+  useEffect(() => {
+    if (editRawText) {
+      window.history.replaceState({}, document.title);
+    }
+  }, [editRawText]);
 
   const handlePreview = useCallback(async (parsed) => {
     setCurrentParsed(parsed);
@@ -99,14 +111,12 @@ export default function DailyInput() {
           ? `${parsed.dateString} updated successfully! ✨`
           : `${parsed.dateString} saved successfully! ✨`
       );
-      
-      // Reset everything immediately for super fast entry
       setTimeout(() => {
         setExistingReport(null);
         setCurrentParsed(null);
         setStep(0);
         clearTrigger.current = Date.now();
-      }, 100); // Instant reset
+      }, 100);
     } catch (err) {
       console.error('Save failed:', err);
       setStep(1);
@@ -116,6 +126,15 @@ export default function DailyInput() {
       setSaving(false);
     }
   }, [addReport, existingReport]);
+
+  const handleEdit = useCallback((report) => {
+    navigate('/settings', { state: { settingsTab: 'entry', editRawText: report.rawText || '' } });
+  }, [navigate]);
+
+  const handleDelete = useCallback(async (report) => {
+    if (!report.id || !report.products || !report.dateString) return;
+    await removeReport(report.id, report.products, report.dateString);
+  }, [removeReport]);
 
   if (!isAdmin) {
     return (
@@ -172,11 +191,17 @@ export default function DailyInput() {
         existingReport={existingReport}
         saving={saving}
         clearTrigger={clearTrigger.current}
+        initialText={editRawText}
       />
 
       {/* History */}
       <div className="pt-1">
-        <ReportHistory reports={reports || []} loading={loading} />
+        <ReportHistory
+          reports={reports || []}
+          loading={loading}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
       </div>
     </div>
   );

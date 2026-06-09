@@ -107,7 +107,7 @@ export default function ProductRanking({ products, loading }) {
                   </td>
                   <td className="py-2.5 pr-2 text-right font-mono text-accent-gold">{formatNumber(product.totalQuantitySold)}</td>
                   <td className="py-2.5 pr-2 text-right font-mono text-text-primary">{product.totalAppearances}</td>
-                  <td className="py-2.5 text-right font-mono text-accent-teal">{product.velocity}/day</td>
+                  <td className="py-2.5 text-right font-mono" style={{ color: '#6366F1' }}>{product.velocity}/day</td>
                 </tr>
               ))}
             </tbody>
