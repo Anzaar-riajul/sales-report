@@ -1,9 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { subDays, format } from 'date-fns';
 import { useReports } from '../hooks/useReports';
 import { useProducts } from '../hooks/useProducts';
-import { computeAlerts, computeDailyReport } from '../utils/analytics';
+import { computeAlerts } from '../utils/analytics';
+import { formatBDTShort } from '../utils/formatters';
 import DynamicKPIs from '../components/Dashboard/DynamicKPIs';
 import RevenueChart from '../components/Dashboard/RevenueChart';
 import OrderTypeChart from '../components/Dashboard/OrderTypeChart';
@@ -29,18 +30,49 @@ const RANGES = [
   { label: '30d', value: '30d' },
 ];
 
-function CollapsibleSection({ title, count, defaultOpen = true, children }) {
+function Section({ title, subtitle, count, defaultOpen = true, children }) {
   return (
     <details open={defaultOpen} className="group">
-      <summary className="flex items-center gap-2 cursor-pointer mb-3 list-none">
-        <span className="text-[10px] text-text-muted transition-transform group-open:rotate-90">▶</span>
-        <h3 className="font-semibold text-text-primary text-base sm:text-lg">{title}</h3>
+      <summary className="flex items-center justify-between cursor-pointer mb-3 list-none select-none">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <span className="w-5 h-5 rounded-lg bg-accent-gold/10 border border-accent-gold/15 flex items-center justify-center flex-shrink-0 group-open:bg-accent-gold/20 transition-colors">
+            <span className="text-[9px] text-accent-gold transition-transform group-open:rotate-90">▶</span>
+          </span>
+          <div className="min-w-0">
+            <h3 className="font-semibold text-text-primary text-sm sm:text-base">{title}</h3>
+            {subtitle && <p className="text-[10px] sm:text-xs text-text-muted truncate">{subtitle}</p>}
+          </div>
+        </div>
         {count !== undefined && (
-          <span className="text-xs text-text-muted bg-bg-elevated px-2 py-0.5 rounded-full">{count}</span>
+          <span className="text-[10px] font-mono text-text-muted bg-bg-elevated/80 px-2 py-0.5 rounded-full border border-border/50 flex-shrink-0 ml-2">
+            {count}
+          </span>
         )}
       </summary>
-      {children}
+      <div className="pl-0 sm:pl-7">
+        {children}
+      </div>
     </details>
+  );
+}
+
+function Greeting() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
+  const hour = new Date().getHours();
+  let greet, icon;
+  if (hour < 12) { greet = 'Good Morning'; icon = '☀️'; }
+  else if (hour < 17) { greet = 'Good Afternoon'; icon = '🌤'; }
+  else if (hour < 21) { greet = 'Good Evening'; icon = '🌅'; }
+  else { greet = 'Good Night'; icon = '🌙'; }
+
+  if (!mounted) return <div className="h-6" />;
+  return (
+    <span className="animate-fade-in inline-flex items-center gap-1.5">
+      <span className="text-sm">{icon}</span>
+      <span>{greet}</span>
+    </span>
   );
 }
 
@@ -76,16 +108,23 @@ export default function Dashboard() {
   const latestReport = sortedReports.length > 0 ? sortedReports[0] : null;
   const previousReport = sortedReports.length > 1 ? sortedReports[1] : null;
 
-  const dailyReport = useMemo(() => computeDailyReport(latestReport, previousReport), [latestReport, previousReport]);
   const alerts = useMemo(() => computeAlerts(sortedReports, products), [sortedReports, products]);
+
+  const ragStatus = useMemo(() => {
+    if (!latestReport || !previousReport) return null;
+    const valChange = latestReport.totalOrderValue - previousReport.totalOrderValue;
+    const ordChange = latestReport.totalOrder - previousReport.totalOrder;
+    return {
+      trend: valChange > 0 ? 'up' : valChange < 0 ? 'down' : 'flat',
+      valChange,
+      ordChange,
+    };
+  }, [latestReport, previousReport]);
 
   if (reportsLoading) {
     return (
-      <div className="space-y-4 sm:space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-xl sm:text-2xl text-text-primary">Dashboard</h2>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
+      <div className="space-y-5 animate-fade-in">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
           {Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -97,15 +136,14 @@ export default function Dashboard() {
 
   if (!latestReport) {
     return (
-      <div className="space-y-6">
-        <h2 className="font-semibold text-xl sm:text-2xl text-text-primary">Dashboard</h2>
-        <div className="glass-card p-8 sm:p-12 text-center">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-accent-gold/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-xl sm:text-2xl text-accent-gold">+</span>
+      <div className="flex items-center justify-center min-h-[60vh] animate-fade-in">
+        <div className="glass-card p-8 sm:p-12 text-center max-w-md w-full">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent-gold/20 to-accent-gold/5 border border-accent-gold/20 flex items-center justify-center mx-auto mb-5">
+            <span className="text-2xl text-accent-gold">+</span>
           </div>
-          <h3 className="font-semibold text-lg sm:text-xl text-text-primary mb-2">No Reports Yet</h3>
-          <p className="text-text-muted text-sm mb-6">Paste your first daily order report to start tracking.</p>
-          <button onClick={() => navigate('/input')} className="btn-primary text-sm sm:text-base">
+          <h3 className="font-semibold text-xl text-text-primary mb-2">No Reports Yet</h3>
+          <p className="text-text-muted text-sm mb-6">Paste your first daily order report to start tracking sales.</p>
+          <button onClick={() => navigate('/input')} className="btn-primary text-sm">
             Paste Your First Report
           </button>
         </div>
@@ -114,29 +152,35 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-5">
-      {/* ═══ FILTER BAR — merges with layout header ═══ */}
-      <div className="-mt-4 sm:-mt-6 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 bg-white/90 backdrop-blur-sm border-b border-border flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="text-xs font-semibold text-text-primary whitespace-nowrap">Dashboard</span>
-          <span className="hidden sm:inline-flex text-[9px] text-text-muted bg-bg-elevated px-1.5 py-0.5 rounded-full border border-border whitespace-nowrap">
-            {filteredReports.length} reports
-          </span>
-          <span className="text-[10px] text-text-muted hidden sm:inline truncate">
-            {range.type === 'yesterday' ? 'Yesterday' :
-             range.type === 'today' ? 'Latest' :
-             range.type === 'custom' ? `${range.start} → ${range.end}` :
-             `Last ${range.type}`}
-          </span>
+    <div className="space-y-4 sm:space-y-5 animate-fade-in">
+
+      {/* ─── FILTER BAR — merged with layout header ─── */}
+      <div className="-mt-4 sm:-mt-6 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2.5 bg-white/95 backdrop-blur-sm border-b border-border/80 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center gap-2">
+            <div className="hidden sm:flex w-6 h-6 rounded-lg bg-gradient-to-br from-accent-gold/15 to-accent-gold/5 border border-accent-gold/20 items-center justify-center flex-shrink-0">
+              <span className="text-[10px] text-accent-gold font-semibold">◈</span>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-text-primary leading-tight"><Greeting /></p>
+              <p className="text-[9px] sm:text-[10px] text-text-muted leading-tight mt-px">
+                {format(new Date(), 'EEEE, MMM dd · ')}
+                {range.type === 'yesterday' ? 'Showing yesterday' :
+                 range.type === 'today' ? 'Latest report' :
+                 range.type === 'custom' ? `${range.start} → ${range.end}` :
+                 `Last ${range.type} · ${filteredReports.length} reports`}
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="flex items-center gap-1 flex-shrink-0">
-          <div className="flex gap-0.5 bg-bg-elevated/80 p-0.5 rounded-lg border border-border shadow-sm">
+          <div className="flex gap-0.5 bg-bg-elevated/80 p-0.5 rounded-lg border border-border/60 shadow-sm">
             {RANGES.map(r => (
               <button key={r.value} onClick={() => { setRange({ type: r.value }); setShowCustom(false); }}
                 className={`px-2 py-1 sm:px-2.5 sm:py-1.5 text-[10px] sm:text-[11px] font-medium rounded-md transition-all whitespace-nowrap ${
                   range.type === r.value
-                    ? 'bg-white text-accent-gold shadow-sm border border-accent-gold/20'
+                    ? 'bg-white text-accent-gold shadow-sm border border-accent-gold/15'
                     : 'text-text-muted hover:text-text-primary hover:bg-white/50'
                 }`}>
                 {r.label}
@@ -145,20 +189,19 @@ export default function Dashboard() {
             <button onClick={() => setShowCustom(!showCustom)}
               className={`px-1.5 py-1 sm:px-2 sm:py-1.5 text-[10px] sm:text-[11px] font-medium rounded-md transition-all ${
                 range.type === 'custom'
-                  ? 'bg-white text-accent-gold shadow-sm border border-accent-gold/20'
+                  ? 'bg-white text-accent-gold shadow-sm border border-accent-gold/15'
                   : 'text-text-muted hover:text-text-primary hover:bg-white/50'
               }`} title="Custom range">
               <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg>
             </button>
           </div>
-
           {showCustom && (
-            <div className="flex items-center gap-1 absolute top-full right-4 sm:right-6 mt-1 bg-white border border-border rounded-lg p-1.5 shadow-lg z-40">
+            <div className="flex items-center gap-1 absolute top-full right-4 sm:right-6 mt-1.5 bg-white border border-border rounded-xl p-1.5 shadow-lg z-40 animate-scale-in">
               <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)}
-                className="text-[10px] sm:text-[11px] px-1.5 py-1 border border-border rounded-md w-22 sm:w-24 focus:outline-none focus:border-accent-gold/50 ring-0" />
+                className="text-[10px] sm:text-[11px] px-1.5 py-1 border border-border/60 rounded-md w-22 sm:w-24 focus:outline-none focus:border-accent-gold/50 ring-0" />
               <span className="text-text-muted text-[10px] font-medium">to</span>
               <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)}
-                className="text-[10px] sm:text-[11px] px-1.5 py-1 border border-border rounded-md w-22 sm:w-24 focus:outline-none focus:border-accent-gold/50 ring-0" />
+                className="text-[10px] sm:text-[11px] px-1.5 py-1 border border-border/60 rounded-md w-22 sm:w-24 focus:outline-none focus:border-accent-gold/50 ring-0" />
               <button onClick={() => { if (customStart && customEnd) { setRange({ type: 'custom', start: customStart, end: customEnd }); setShowCustom(false); } }}
                 className="btn-primary text-[10px] sm:text-[11px] py-1 px-2 rounded-md" disabled={!customStart || !customEnd}>
                 Apply
@@ -168,85 +211,107 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ═══ ALERTS ═══ */}
+      {/* ─── RAG STATUS BAR ─── */}
+      {ragStatus && (
+        <div className={`px-3 py-2 rounded-xl border text-xs font-medium flex items-center gap-2 animate-fade-in ${
+          ragStatus.trend === 'up'
+            ? 'bg-accent-teal/5 border-accent-teal/15 text-accent-teal'
+            : ragStatus.trend === 'down'
+            ? 'bg-accent-rose/5 border-accent-rose/15 text-accent-rose'
+            : 'bg-text-muted/5 border-text-muted/15 text-text-muted'
+        }`}>
+          <span className="text-sm">
+            {ragStatus.trend === 'up' ? '▲' : ragStatus.trend === 'down' ? '▼' : '–'}
+          </span>
+          <span>
+            {ragStatus.trend === 'up'
+              ? `Value up ${formatBDTShort(ragStatus.valChange)} vs previous`
+              : ragStatus.trend === 'down'
+              ? `Value down ${formatBDTShort(Math.abs(ragStatus.valChange))} vs previous`
+              : 'Value unchanged vs previous'}
+          </span>
+        </div>
+      )}
+
+      {/* ─── ALERTS ─── */}
       {alerts.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1 animate-fade-in">
           {alerts.slice(0, 4).map((alert, i) => (
             <div key={i} className="flex-shrink-0 min-w-[200px] sm:min-w-[240px]">
               <Alert message={alert.message} severity={alert.severity} />
             </div>
           ))}
           {alerts.length > 4 && (
-            <button
-              onClick={() => navigate('/alerts')}
-              className="flex-shrink-0 px-3 sm:px-4 py-2 text-xs text-accent-gold hover:underline bg-white rounded-lg border border-border shadow-sm"
-            >
-              +{alerts.length - 4}
+            <button onClick={() => navigate('/alerts')}
+              className="flex-shrink-0 px-3 py-2 text-xs text-accent-gold hover:underline bg-white rounded-xl border border-border/60 shadow-sm hover:shadow-md transition-all">
+              +{alerts.length - 4} more
             </button>
           )}
         </div>
       )}
 
-      {/* ═══ KPI CARDS ═══ */}
+      {/* ─── KPI CARDS ─── */}
       <DynamicKPIs reports={filteredReports} allReports={sortedReports} />
 
-      {/* ═══ REVENUE & ORDERS ═══ */}
-      <CollapsibleSection title="Revenue & Orders">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      {/* ─── PRODUCTS OVERVIEW ─── */}
+      <Section title="Products" subtitle="New, trending, dead stock" count={products?.length}>
+        <ProductsOverview products={products} reports={sortedReports} latestReport={latestReport} />
+      </Section>
+
+      {/* ─── REVENUE & ORDERS ─── */}
+      <Section title="Revenue & Orders" subtitle="Daily revenue, order types, and breakdown">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
           <div className="lg:col-span-2">
             <RevenueChart reports={filteredReports} loading={reportsLoading} />
           </div>
           <OrderTypeChart report={latestReport} loading={reportsLoading} />
         </div>
-        <div className="mt-4">
+        <div className="mt-3 sm:mt-4">
           <DailyReport reports={filteredReports} loading={reportsLoading} />
         </div>
-      </CollapsibleSection>
+      </Section>
 
-      {/* ═══ PERIOD ANALYSIS ═══ */}
-      <CollapsibleSection title="Period Analysis">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* ─── PERIOD ANALYSIS ─── */}
+      <Section title="Period Analysis" subtitle="Weekly, monthly, and yearly summaries">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           <WeeklyReport reports={filteredReports} loading={reportsLoading} />
           <MonthlyReport reports={filteredReports} loading={reportsLoading} />
           <YearlyReport reports={sortedReports} loading={reportsLoading} />
         </div>
-      </CollapsibleSection>
+      </Section>
 
-      {/* ═══ WEEKDAY & CATEGORY ═══ */}
-      <CollapsibleSection title="Weekday & Category">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* ─── WEEKDAY & CATEGORY ─── */}
+      <Section title="Weekday & Category" subtitle="Order patterns by day and product category">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <WeekdayChart reports={filteredReports} loading={reportsLoading} />
           <CategoryChart products={products} loading={reportsLoading} />
         </div>
-      </CollapsibleSection>
+      </Section>
 
-      {/* ═══ PRODUCT INTELLIGENCE ═══ */}
-      <CollapsibleSection title="Stock Intelligence" count={products?.length}>
+      {/* ─── STOCK INTELLIGENCE ─── */}
+      <Section title="Stock Intelligence" subtitle="Restock recommendations and product health" count={products?.length}>
         <ProductIntelligence products={products} reports={sortedReports} />
-      </CollapsibleSection>
+      </Section>
 
-      {/* ═══ TRENDS & ROLLING ═══ */}
-      <CollapsibleSection title="Rolling & Products/Order">
+      {/* ─── ROLLING & TRENDS ─── */}
+      <Section title="Rolling Averages" subtitle="7/14/30-day moving trends">
         <RollingAvgChart reports={filteredReports} loading={reportsLoading} />
-      </CollapsibleSection>
+      </Section>
 
-      {/* ═══ ADVANCED TRENDS ═══ */}
+      {/* ─── ADVANCED TRENDS ─── */}
       <AdvancedTrends reports={filteredReports} />
 
-      {/* ═══ COMPARISONS ═══ */}
-      <CollapsibleSection title="Comparisons">
+      {/* ─── COMPARISONS ─── */}
+      <Section title="Comparisons" subtitle="Week-over-week, month-over-month, same-day">
         <ComparisonCards reports={sortedReports} loading={reportsLoading} />
-      </CollapsibleSection>
+      </Section>
 
-      {/* ═══ PRODUCTS OVERVIEW ═══ */}
-      <CollapsibleSection title="Products" count={products?.length}>
-        <ProductsOverview products={products} reports={sortedReports} latestReport={latestReport} />
-      </CollapsibleSection>
-
-      {/* ═══ REPORT HISTORY ═══ */}
-      <CollapsibleSection title="Report History" count={sortedReports.length} defaultOpen={false}>
+      {/* ─── REPORT HISTORY ─── */}
+      <Section title="Report History" subtitle={`All ${sortedReports.length} reports`} defaultOpen={false}>
         <ReportHistory reports={sortedReports} loading={reportsLoading} />
-      </CollapsibleSection>
+      </Section>
     </div>
   );
 }
+
+

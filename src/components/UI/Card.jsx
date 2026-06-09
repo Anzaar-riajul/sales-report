@@ -1,8 +1,8 @@
-export default function Card({ children, className = '', onClick, hover = false }) {
+export default function Card({ children, className = '', onClick, hover = true, padding = true }) {
   return (
     <div
       onClick={onClick}
-      className={`glass-card p-5 ${hover ? 'cursor-pointer hover:bg-bg-elevated/50 transition-all duration-200' : ''} ${className}`}
+      className={`${hover ? 'glass-card' : 'glass-card-static'} ${padding ? 'p-4 sm:p-5' : ''} ${onClick ? 'cursor-pointer' : ''} ${className}`}
     >
       {children}
     </div>
