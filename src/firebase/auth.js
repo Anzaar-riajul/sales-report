@@ -1,4 +1,4 @@
-import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from './config';
 
@@ -8,12 +8,41 @@ export function onAuthChange(callback) {
   return onAuthStateChanged(auth, callback);
 }
 
+export async function loginWithEmail(email, password) {
+  try {
+    const result = await signInWithEmailAndPassword(auth, email, password);
+    return result.user;
+  } catch (error) {
+    console.error('Email login error:', error);
+    throw error;
+  }
+}
+
+export async function signUpWithEmail(email, password) {
+  try {
+    const result = await createUserWithEmailAndPassword(auth, email, password);
+    return result.user;
+  } catch (error) {
+    console.error('Email signup error:', error);
+    throw error;
+  }
+}
+
+export async function resetPassword(email) {
+  try {
+    await sendPasswordResetEmail(auth, email);
+  } catch (error) {
+    console.error('Password reset error:', error);
+    throw error;
+  }
+}
+
 export async function loginWithGoogle() {
   try {
     const result = await signInWithPopup(auth, provider);
     return result.user;
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Google login error:', error);
     throw error;
   }
 }
