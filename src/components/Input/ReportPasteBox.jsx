@@ -1,13 +1,23 @@
 import { useState, useCallback, useEffect } from 'react';
-import Card from '../UI/Card';
 import Badge from '../UI/Badge';
 import { parseReport } from '../../utils/parser';
 import { formatBDT, formatNumber } from '../../utils/formatters';
+
+function PreviewStat({ label, value, color = 'gold', large = false }) {
+  return (
+    <div className={`relative overflow-hidden bg-gradient-to-br from-white to-bg-elevated/30 border border-border/40 rounded-xl p-3 sm:p-3.5 group hover:shadow-md hover:border-accent-gold/20 transition-all duration-300 ${large ? 'sm:col-span-2' : ''}`}>
+      <div className={`absolute -top-4 -right-4 w-12 h-12 bg-gradient-to-br from-accent-${color}/10 to-transparent rounded-full opacity-50 group-hover:opacity-80 transition-opacity`} />
+      <p className="text-[10px] text-text-muted uppercase tracking-wider font-medium relative">{label}</p>
+      <p className={`font-mono font-bold text-text-primary mt-1 relative ${large ? 'text-lg sm:text-xl' : 'text-sm sm:text-base'}`}>{value}</p>
+    </div>
+  );
+}
 
 export default function ReportPasteBox({ onSave, onPreview, existingReport, saving, clearTrigger }) {
   const [rawText, setRawText] = useState('');
   const [parsed, setParsed] = useState(null);
   const [error, setError] = useState(null);
+  const [focused, setFocused] = useState(false);
 
   useEffect(() => {
     if (clearTrigger) {
@@ -47,116 +57,193 @@ export default function ReportPasteBox({ onSave, onPreview, existingReport, savi
     setError(null);
   }, []);
 
+  const handlePaste = useCallback(async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      setRawText(text);
+    } catch {}
+  }, []);
+
   return (
     <div className="space-y-4">
-      <Card>
-        <h3 className="section-title mb-3">Paste Daily Report</h3>
-        <textarea
-          value={rawText}
-          onChange={(e) => setRawText(e.target.value)}
-          placeholder="Paste the daily order report here...
+      {/* Paste Area */}
+      <div className={`relative overflow-hidden bg-white/80 backdrop-blur-xl border rounded-2xl transition-all duration-300 ${focused ? 'border-accent-gold/30 shadow-lg shadow-accent-gold/5' : 'border-border/50 shadow-sm'}`}>
+        {/* Top accent */}
+        <div className={`h-[2px] transition-all duration-500 ${focused ? 'bg-gradient-to-r from-transparent via-accent-gold to-transparent opacity-100' : 'bg-gradient-to-r from-transparent via-border to-transparent opacity-50'}`} />
 
-Example:
-Bismillahir Rahmanir Rahim
-Anzaar Islamic Lifestyle
-Online Order update: 08 June, 2026 (Monday)
- Regular Order: 68 pcs Regular Product: 82 Pcs Customize order: 21 pcs Customize Product: 27 pcs Total Order: 89 Total Product: 109 pcs Total Advance: 39,135 TK Total Order Value: 3,15,475 TK
-==================
-1. Abaya Airaffa-4
-2. Abaya Anaira v1-2
-3. Abaya Tahsheen-6"
-          className="input-dark w-full h-64 resize-y font-mono text-sm leading-relaxed"
-          spellCheck={false}
-        />
-        {error && (
-          <p className="text-accent-rose text-sm mt-2">{error}</p>
-        )}
-        <div className="flex gap-3 mt-3">
-          <button onClick={handleParse} className="btn-primary text-sm" disabled={!rawText.trim()}>
-            Parse & Preview
-          </button>
-          <button onClick={handleClear} className="btn-secondary text-sm">
-            Clear
-          </button>
-        </div>
-      </Card>
-
-      {parsed && (
-        <Card>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="section-title">Preview</h3>
-            <div className="flex gap-2">
-              {parsed.dateString && (
-                <Badge variant="gold">{parsed.dateString} ({parsed.dayOfWeek})</Badge>
-              )}
+        <div className="p-4 sm:p-5">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-accent-gold/15 to-accent-gold/5 border border-accent-gold/20 flex items-center justify-center">
+                <span className="text-sm">📋</span>
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-text-primary">Paste Report</h3>
+                <p className="text-[10px] text-text-muted">Copy from WhatsApp or any messaging app</p>
+              </div>
             </div>
+            <button
+              onClick={handlePaste}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-accent-gold bg-accent-gold/5 hover:bg-accent-gold/10 border border-accent-gold/15 rounded-lg transition-all"
+            >
+              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2" />
+                <rect x="8" y="2" width="8" height="4" rx="1" />
+              </svg>
+              Paste
+            </button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-            {[
-              { label: 'Regular Orders', value: formatNumber(parsed.regularOrder) },
-              { label: 'Regular Products', value: formatNumber(parsed.regularProduct) },
-              { label: 'Customize Orders', value: formatNumber(parsed.customizeOrder) },
-              { label: 'Customize Products', value: formatNumber(parsed.customizeProduct) },
-              { label: 'Total Orders', value: formatNumber(parsed.totalOrder) },
-              { label: 'Total Products', value: formatNumber(parsed.totalProduct) },
-              { label: 'Total Advance', value: formatBDT(parsed.totalAdvance) },
-              { label: 'Order Value', value: formatBDT(parsed.totalOrderValue) },
-            ].map(stat => (
-              <div key={stat.label} className="glass-card-elevated p-3">
-                <p className="text-text-muted text-xs">{stat.label}</p>
-                <p className="font-mono text-sm font-semibold text-text-primary mt-1">{stat.value}</p>
+          {/* Textarea */}
+          <div className="relative">
+            <textarea
+              value={rawText}
+              onChange={(e) => setRawText(e.target.value)}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              placeholder={"Paste the daily order report here...\n\nExample:\nBismillahir Rahmanir Rahim\nAnzaar Islamic Lifestyle\nOnline Order update: 08 June, 2026 (Monday)\n Regular Order: 68 pcs Regular Product: 82 Pcs..."}
+              className="w-full h-56 sm:h-64 resize-y font-mono text-[13px] leading-relaxed bg-bg-elevated/30 border border-border/30 rounded-xl p-4 focus:outline-none focus:border-accent-gold/30 focus:bg-white/50 transition-all placeholder:text-text-muted/40"
+              spellCheck={false}
+            />
+            {rawText && (
+              <div className="absolute bottom-2 right-2 flex items-center gap-2">
+                <span className="text-[9px] text-text-muted/50 font-mono">{rawText.split('\n').length} lines</span>
+                <button onClick={handleClear} className="text-[9px] text-accent-rose/60 hover:text-accent-rose transition-colors">clear</button>
               </div>
-            ))}
+            )}
           </div>
 
-          {parsed.products.length > 0 && (
-            <div>
-              <h4 className="text-sm font-medium text-text-primary mb-2">Products ({parsed.products.length})</h4>
-              <div className="max-h-48 overflow-y-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-text-muted text-xs uppercase tracking-wider border-b border-border">
-                      <th className="text-left py-2 pr-2">Product</th>
-                      <th className="text-right py-2">Qty</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {parsed.products.map((p) => (
-                      <tr key={p.name} className="border-b border-border/50">
-                        <td className="py-1.5 pr-2 text-text-primary">{p.name}</td>
-                        <td className="py-1.5 text-right font-mono text-accent-gold">{p.quantity}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+          {/* Error */}
+          {error && (
+            <div className="mt-3 flex items-center gap-2 px-3 py-2 bg-accent-rose/5 border border-accent-rose/15 rounded-xl">
+              <span className="text-accent-rose text-xs">⚠</span>
+              <p className="text-accent-rose text-xs">{error}</p>
             </div>
           )}
 
-          <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
+          {/* Actions */}
+          <div className="flex gap-2.5 mt-4">
             <button
-              onClick={handleSave}
-              disabled={saving || !parsed.dateString}
-              className="btn-primary text-sm flex items-center gap-2"
+              onClick={handleParse}
+              disabled={!rawText.trim()}
+              className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-accent-gold to-accent-gold/90 text-white font-semibold text-sm py-3 px-4 rounded-xl shadow-lg shadow-accent-gold/20 hover:shadow-xl hover:shadow-accent-gold/30 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-lg transition-all duration-300"
             >
-              {saving ? (
-                <>
-                  <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  Saving...
-                </>
-              ) : 'Save'}
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              Parse & Preview
             </button>
-            {existingReport && (
-              <p className="text-amber-600 text-xs font-medium">
-                ⚠ Report for {parsed.dateString} already exists. Save will overwrite.
-              </p>
-            )}
+            <button
+              onClick={handleClear}
+              className="px-4 py-3 text-sm font-medium text-text-muted bg-bg-elevated/50 hover:bg-bg-elevated border border-border/40 rounded-xl transition-all"
+            >
+              Clear
+            </button>
           </div>
-        </Card>
+        </div>
+      </div>
+
+      {/* Preview */}
+      {parsed && (
+        <div className="relative overflow-hidden bg-white/80 backdrop-blur-xl border border-border/50 rounded-2xl shadow-sm animate-fade-in-up">
+          {/* Top accent */}
+          <div className="h-[2px] bg-gradient-to-r from-transparent via-accent-teal to-transparent opacity-60" />
+
+          <div className="p-4 sm:p-5">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-accent-teal/15 to-accent-teal/5 border border-accent-teal/20 flex items-center justify-center">
+                  <span className="text-sm">👁</span>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-text-primary">Preview</h3>
+                  {parsed.dateString && (
+                    <p className="text-[10px] text-text-muted">{parsed.dateString} ({parsed.dayOfWeek})</p>
+                  )}
+                </div>
+              </div>
+              {existingReport && (
+                <span className="text-[10px] font-medium text-amber-600 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full">
+                  ⚠ Overwrite existing
+                </span>
+              )}
+            </div>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-4">
+              <PreviewStat label="Regular Orders" value={formatNumber(parsed.regularOrder)} />
+              <PreviewStat label="Regular Products" value={formatNumber(parsed.regularProduct)} />
+              <PreviewStat label="Custom Orders" value={formatNumber(parsed.customizeOrder)} />
+              <PreviewStat label="Custom Products" value={formatNumber(parsed.customizeProduct)} />
+              <PreviewStat label="Total Orders" value={formatNumber(parsed.totalOrder)} large />
+              <PreviewStat label="Total Products" value={formatNumber(parsed.totalProduct)} large />
+              <PreviewStat label="Total Advance" value={formatBDT(parsed.totalAdvance)} />
+              <PreviewStat label="Order Value" value={formatBDT(parsed.totalOrderValue)} />
+            </div>
+
+            {/* Products */}
+            {parsed.products.length > 0 && (
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-xs font-semibold text-text-primary">Products</h4>
+                  <span className="text-[10px] text-text-muted font-mono">{parsed.products.length} items</span>
+                </div>
+                <div className="max-h-52 overflow-y-auto rounded-xl border border-border/30 bg-bg-elevated/20">
+                  <table className="w-full text-sm">
+                    <thead className="sticky top-0 bg-bg-elevated/80 backdrop-blur-sm">
+                      <tr className="text-text-muted text-[10px] uppercase tracking-wider">
+                        <th className="text-left py-2 px-3 font-medium">Product</th>
+                        <th className="text-right py-2 px-3 font-medium">Qty</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {parsed.products.map((p, i) => (
+                        <tr key={p.name} className={`border-t border-border/20 ${i % 2 === 0 ? 'bg-white/30' : ''}`}>
+                          <td className="py-2 px-3 text-text-primary text-xs font-medium">{p.name}</td>
+                          <td className="py-2 px-3 text-right font-mono text-accent-gold text-xs font-semibold">{p.quantity}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Save */}
+            <div className="pt-3 border-t border-border/30 flex items-center justify-between">
+              <button
+                onClick={handleSave}
+                disabled={saving || !parsed.dateString}
+                className="flex items-center gap-2 bg-gradient-to-r from-accent-teal to-accent-teal/90 text-white font-semibold text-sm py-3 px-6 rounded-xl shadow-lg shadow-accent-teal/20 hover:shadow-xl hover:shadow-accent-teal/30 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300"
+              >
+                {saving ? (
+                  <>
+                    <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M5 13l4 4L19 7" />
+                    </svg>
+                    Save Report
+                  </>
+                )}
+              </button>
+              {existingReport && (
+                <p className="text-[11px] text-amber-600 font-medium">
+                  This will overwrite the existing report for {parsed.dateString}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
