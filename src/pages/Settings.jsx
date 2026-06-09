@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { getSignupRequests, approveRequest, rejectRequest, addUserDirectly, getAllUsers, updateUserRole, removeUser } from '../firebase/auth';
 import DetailModal from '../components/UI/DetailModal';
@@ -67,6 +68,7 @@ function RequestCard({ req, onApprove, onReject, onClick }) {
 
 export default function Settings() {
   const { user, isSuperAdmin } = useAuth();
+  const navigate = useNavigate();
   const [tab, setTab] = useState('users');
   const [users, setUsers] = useState([]);
   const [requests, setRequests] = useState([]);
@@ -236,54 +238,25 @@ export default function Settings() {
   if (!isSuperAdmin) {
     return (
       <div className="space-y-4 max-w-md mx-auto animate-fade-in">
-        {/* Header */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-accent-gold to-amber-500 rounded-2xl p-5 text-white shadow-lg shadow-accent-gold/20">
+        <div className="relative overflow-hidden bg-gradient-to-br from-accent-rose to-rose-500 rounded-2xl p-5 text-white shadow-lg shadow-accent-rose/20">
           <div className="absolute -top-8 -right-8 w-24 h-24 bg-white/10 rounded-full" />
           <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-white/10 rounded-full" />
           <div className="relative">
-            <h1 className="text-xl font-bold tracking-tight">Settings</h1>
-            <p className="text-white/80 text-xs mt-1">Account info and preferences</p>
+            <h1 className="text-xl font-bold tracking-tight">Access Denied</h1>
+            <p className="text-white/80 text-xs mt-1">Settings is restricted to Super Admin only</p>
           </div>
         </div>
 
-        {/* Account Card */}
-        <div className="bg-white/80 border border-border/30 rounded-2xl p-4">
-          <div className="flex items-center gap-3">
-            {user?.photoURL ? (
-              <img src={user.photoURL} alt="" className="w-12 h-12 rounded-xl shadow-md" />
-            ) : (
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent-gold to-amber-400 flex items-center justify-center text-lg text-white font-bold shadow-md">
-                {user?.email?.charAt(0).toUpperCase() || 'A'}
-              </div>
-            )}
-            <div>
-              <p className="font-semibold text-text-primary">{user?.displayName || user?.email}</p>
-              <p className="text-xs text-text-muted">{user?.email}</p>
-              <span className="text-[9px] px-2 py-0.5 rounded-full bg-accent-gold/10 text-accent-gold font-bold mt-1 inline-block">Viewer</span>
-            </div>
+        <div className="bg-white/80 border border-border/30 rounded-2xl p-6 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-accent-rose/10 border border-accent-rose/20 flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl">🔒</span>
           </div>
-        </div>
-
-        {/* Info */}
-        <div className="bg-white/80 border border-border/30 rounded-2xl p-4 space-y-2">
-          <div className="flex items-center justify-between py-2 border-b border-border/20">
-            <span className="text-xs text-text-muted">App</span>
-            <span className="text-xs font-medium text-text-primary">Anzaar Sales Report</span>
-          </div>
-          <div className="flex items-center justify-between py-2 border-b border-border/20">
-            <span className="text-xs text-text-muted">Version</span>
-            <span className="text-xs font-mono text-text-primary">2.0.0</span>
-          </div>
-          <div className="flex items-center justify-between py-2">
-            <span className="text-xs text-text-muted">Role</span>
-            <span className="text-xs font-medium text-accent-gold">Viewer (read-only)</span>
-          </div>
-        </div>
-
-        {/* Contact admin hint */}
-        <div className="bg-accent-gold/5 border border-accent-gold/15 rounded-2xl p-4 text-center">
-          <p className="text-xs text-text-muted">Need admin access?</p>
-          <p className="text-[10px] text-accent-gold font-medium mt-1">Contact the super admin to upgrade your role.</p>
+          <h3 className="font-semibold text-text-primary mb-1">Super Admin Only</h3>
+          <p className="text-xs text-text-muted mb-4">You don't have permission to access system settings.</p>
+          <button onClick={() => navigate('/profile')}
+            className="btn-primary text-sm">
+            Go to Profile
+          </button>
         </div>
       </div>
     );

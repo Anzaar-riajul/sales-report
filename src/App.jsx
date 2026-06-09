@@ -10,11 +10,12 @@ import Analytics from './pages/Analytics';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
 import Settings from './pages/Settings';
+import Profile from './pages/Profile';
 import Alerts from './pages/Alerts';
 import PDFExport from './pages/PDFExport';
 import Loader from './components/UI/Loader';
 
-function ProtectedRoute({ children, user, allowed, loading }) {
+function ProtectedRoute({ children, user, allowed, loading, role }) {
   const [requestSent, setRequestSent] = useState(false);
   const [reqLoading, setReqLoading] = useState(false);
   const [reqError, setReqError] = useState('');
@@ -85,11 +86,11 @@ function ProtectedRoute({ children, user, allowed, loading }) {
     );
   }
 
-  return <Layout user={user}>{children}</Layout>;
+  return <Layout user={user} role={role}>{children}</Layout>;
 }
 
 export default function App() {
-  const { user, loading, allowed } = useAuth();
+  const { user, loading, allowed, role } = useAuth();
 
   return (
     <Routes>
@@ -97,42 +98,47 @@ export default function App() {
         loading ? <Loader /> : user ? <Navigate to="/" replace /> : <Login loading={loading} />
       } />
       <Route path="/" element={
-        <ProtectedRoute user={user} allowed={allowed} loading={loading}>
+        <ProtectedRoute user={user} allowed={allowed} loading={loading} role={role}>
           <Dashboard />
         </ProtectedRoute>
       } />
       <Route path="/input" element={
-        <ProtectedRoute user={user} allowed={allowed} loading={loading}>
+        <ProtectedRoute user={user} allowed={allowed} loading={loading} role={role}>
           <DailyInput />
         </ProtectedRoute>
       } />
       <Route path="/analytics" element={
-        <ProtectedRoute user={user} allowed={allowed} loading={loading}>
+        <ProtectedRoute user={user} allowed={allowed} loading={loading} role={role}>
           <Analytics />
         </ProtectedRoute>
       } />
       <Route path="/products" element={
-        <ProtectedRoute user={user} allowed={allowed} loading={loading}>
+        <ProtectedRoute user={user} allowed={allowed} loading={loading} role={role}>
           <Products />
         </ProtectedRoute>
       } />
       <Route path="/products/:productName" element={
-        <ProtectedRoute user={user} allowed={allowed} loading={loading}>
+        <ProtectedRoute user={user} allowed={allowed} loading={loading} role={role}>
           <ProductDetail />
         </ProtectedRoute>
       } />
+      <Route path="/profile" element={
+        <ProtectedRoute user={user} allowed={allowed} loading={loading} role={role}>
+          <Profile />
+        </ProtectedRoute>
+      } />
       <Route path="/settings" element={
-        <ProtectedRoute user={user} allowed={allowed} loading={loading}>
+        <ProtectedRoute user={user} allowed={allowed} loading={loading} role={role}>
           <Settings />
         </ProtectedRoute>
       } />
       <Route path="/alerts" element={
-        <ProtectedRoute user={user} allowed={allowed} loading={loading}>
+        <ProtectedRoute user={user} allowed={allowed} loading={loading} role={role}>
           <Alerts />
         </ProtectedRoute>
       } />
       <Route path="/export" element={
-        <ProtectedRoute user={user} allowed={allowed} loading={loading}>
+        <ProtectedRoute user={user} allowed={allowed} loading={loading} role={role}>
           <PDFExport />
         </ProtectedRoute>
       } />

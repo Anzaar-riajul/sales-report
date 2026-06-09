@@ -8,10 +8,16 @@ const navItems = [
   { path: '/products', label: 'Products', icon: '▣' },
   { path: '/alerts', label: 'Alerts', icon: '▲' },
   { path: '/export', label: 'Export', icon: '↓' },
+];
+
+const adminNavItems = [
   { path: '/settings', label: 'Settings', icon: '⚙' },
 ];
 
-export default function Sidebar({ user }) {
+export default function Sidebar({ user, role }) {
+  const isSuperAdmin = role === 'super_admin';
+  const allNavItems = isSuperAdmin ? [...navItems, ...adminNavItems] : navItems;
+
   const handleLogout = async () => {
     await logout();
   };
@@ -25,7 +31,7 @@ export default function Sidebar({ user }) {
         </div>
 
         <nav className="flex-1 py-4 px-3 space-y-1">
-          {navItems.map((item) => (
+          {allNavItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
@@ -65,7 +71,7 @@ export default function Sidebar({ user }) {
       </aside>
 
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-around items-start px-2 pt-2 pb-[env(safe-area-inset-bottom,8px)] bg-white/80 backdrop-blur-xl border-t border-border/50 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
-        {navItems.map((item) => (
+        {allNavItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}

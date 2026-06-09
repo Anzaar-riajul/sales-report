@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { formatBDTShort } from '../../utils/formatters';
 
-export default function Header({ latestReport }) {
+export default function Header({ latestReport, user, role }) {
   const navigate = useNavigate();
 
   return (
@@ -36,10 +36,25 @@ export default function Header({ latestReport }) {
           </div>
         )}
         <div className="h-8 w-px bg-border hidden sm:block" />
-        <div className="flex items-center gap-1.5 bg-accent-gold/5 border border-accent-gold/15 rounded-lg px-3 py-2">
-          <span className="text-xs sm:text-sm font-semibold text-accent-gold">◈</span>
-          <span className="text-xs sm:text-sm font-semibold text-accent-gold">Anzaar</span>
-        </div>
+        <button
+          onClick={() => navigate('/profile')}
+          className="flex items-center gap-2 bg-gradient-to-r from-accent-gold/10 to-amber-500/10 border border-accent-gold/20 rounded-xl px-3 py-2 hover:from-accent-gold/15 hover:to-amber-500/15 hover:border-accent-gold/30 hover:shadow-lg hover:shadow-accent-gold/10 transition-all duration-300 group"
+        >
+          {user?.photoURL ? (
+            <img src={user.photoURL} alt="" className="w-7 h-7 rounded-lg shadow-sm group-hover:shadow-md transition-shadow" />
+          ) : (
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent-gold to-amber-400 flex items-center justify-center text-[11px] text-white font-bold shadow-sm">
+              {user?.email?.charAt(0).toUpperCase() || 'A'}
+            </div>
+          )}
+          <div className="hidden sm:block text-left">
+            <p className="text-[11px] font-semibold text-text-primary leading-tight">{user?.displayName || user?.email?.split('@')[0]}</p>
+            <p className="text-[9px] text-accent-gold font-medium leading-tight">{role === 'super_admin' ? '👑 Super Admin' : role === 'admin' ? '⚙ Admin' : '👁 Viewer'}</p>
+          </div>
+          <svg className="w-3.5 h-3.5 text-text-muted group-hover:text-accent-gold transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
       </div>
     </header>
   );
