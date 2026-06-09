@@ -16,6 +16,7 @@ import ProductIntelligence from '../components/Dashboard/ProductIntelligence';
 import AdvancedTrends from '../components/Dashboard/AdvancedTrends';
 import YearlyReport from '../components/Dashboard/YearlyReport';
 import ProductRanking from '../components/Products/ProductRanking';
+import ReportHistory from '../components/Dashboard/ReportHistory';
 import DailyReport from '../components/Reports/DailyReport';
 import WeeklyReport from '../components/Reports/WeeklyReport';
 import MonthlyReport from '../components/Reports/MonthlyReport';
@@ -252,6 +253,11 @@ export default function Dashboard() {
       {/* ═══ TODAY'S PRODUCTS ═══ */}
       <CollapsibleSection title="Today's Products">
         <TopProductsTable products={latestReport?.products || []} loading={reportsLoading} />
+      </CollapsibleSection>
+
+      {/* ═══ REPORT HISTORY ═══ */}
+      <CollapsibleSection title="Report History" count={sortedReports.length} defaultOpen={false}>
+        <ReportHistory reports={sortedReports} loading={reportsLoading} />
       </CollapsibleSection>
     </div>
   );
