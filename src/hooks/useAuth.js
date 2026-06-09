@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { onAuthChange, isUserAllowed } from '../firebase/auth';
+import { onAuthChange, isUserAllowed, isSuperAdmin } from '../firebase/auth';
 
 export function useAuth() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [allowed, setAllowed] = useState(false);
+  const [superAdmin, setSuperAdmin] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthChange(async (firebaseUser) => {
@@ -12,9 +13,11 @@ export function useAuth() {
         setUser(firebaseUser);
         const allowedStatus = await isUserAllowed(firebaseUser.uid);
         setAllowed(allowedStatus);
+        setSuperAdmin(isSuperAdmin(firebaseUser.uid));
       } else {
         setUser(null);
         setAllowed(false);
+        setSuperAdmin(false);
       }
       setLoading(false);
     });
@@ -22,5 +25,5 @@ export function useAuth() {
     return () => unsubscribe();
   }, []);
 
-  return { user, loading, allowed };
+  return { user, loading, allowed, superAdmin };
 }

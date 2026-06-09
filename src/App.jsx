@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
+import { createSignupRequest } from './firebase/auth';
 import Layout from './components/Layout/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -12,6 +14,10 @@ import Alerts from './pages/Alerts';
 import Loader from './components/UI/Loader';
 
 function ProtectedRoute({ children, user, allowed, loading }) {
+  const [requestSent, setRequestSent] = useState(false);
+  const [reqLoading, setReqLoading] = useState(false);
+  const [reqError, setReqError] = useState('');
+
   if (loading) {
     return (
       <div className="min-h-screen bg-bg-primary flex items-center justify-center">
@@ -25,37 +31,54 @@ function ProtectedRoute({ children, user, allowed, loading }) {
   }
 
   if (!allowed) {
-    const copyUid = () => {
-      if (user?.uid) {
-        navigator.clipboard.writeText(user.uid);
+    const handleRequestAccess = async () => {
+      setReqLoading(true);
+      setReqError('');
+      try {
+        const result = await createSignupRequest(user.uid, user.email);
+        if (result.success) {
+          setRequestSent(true);
+        } else {
+          setReqError(result.message || 'Failed to send request.');
+        }
+      } catch (err) {
+        setReqError('Something went wrong. Please try again.');
       }
+      setReqLoading(false);
     };
 
     return (
       <div className="min-h-screen bg-bg-primary flex items-center justify-center p-4">
-        <div className="glass-card p-8 max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-accent-rose/10 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="glass-card p-8 sm:p-10 max-w-md w-full text-center">
+          <div className="w-16 h-16 rounded-2xl bg-accent-rose/10 border border-accent-rose/20 flex items-center justify-center mx-auto mb-5">
             <span className="text-2xl text-accent-rose">!</span>
           </div>
-          <h2 className="font-display text-xl text-text-primary mb-2">Access Denied</h2>
-          <p className="text-text-muted text-sm mb-4">
-            Your Google account is not in the allowed users list.
+          <h2 className="font-semibold text-xl text-text-primary mb-2">Access Denied</h2>
+          <p className="text-text-muted text-sm mb-6">
+            Your account is not yet authorized to access this dashboard.
           </p>
-          <div className="bg-bg-elevated rounded-lg p-4 border border-border text-left mb-4">
-            <p className="text-xs text-text-muted mb-2">Set up access:</p>
-            <ol className="text-xs text-text-primary space-y-1.5 list-decimal list-inside">
-              <li>Go to <span className="text-accent-gold">Firebase Console → Firestore</span></li>
-              <li>Create collection: <code className="text-accent-gold">config</code></li>
-              <li>Document ID: <code className="text-accent-gold">allowedUsers</code></li>
-              <li>Field: <code className="text-accent-gold">uids</code> (array), add your UID below</li>
-            </ol>
-            <div className="mt-3 pt-3 border-t border-border">
-              <p className="text-xs text-text-muted mb-1">Your UID (click to copy):</p>
-              <button onClick={copyUid} className="font-mono text-xs text-accent-gold bg-bg-primary px-3 py-2 rounded-lg w-full text-left truncate hover:brightness-110">
-                {user?.uid || 'Loading...'}
-              </button>
+
+          {requestSent ? (
+            <div className="bg-accent-teal/5 border border-accent-teal/20 rounded-xl p-4 text-left">
+              <p className="text-sm font-medium text-accent-teal mb-1">✓ Request Sent</p>
+              <p className="text-xs text-text-muted">
+                The super admin has been notified. You will be able to access the dashboard once approved.
+              </p>
             </div>
-          </div>
+          ) : (
+            <>
+              <button onClick={handleRequestAccess} disabled={reqLoading}
+                className="btn-primary w-full text-sm mb-3 flex items-center justify-center gap-2">
+                {reqLoading ? (
+                  <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Sending...</>
+                ) : 'Request Access'}
+              </button>
+              {reqError && <p className="text-xs text-accent-rose mb-3">{reqError}</p>}
+              <p className="text-[10px] text-text-muted">
+                Your UID: <code className="text-accent-gold bg-bg-elevated px-1.5 py-0.5 rounded text-[9px]">{user.uid}</code>
+              </p>
+            </>
+          )}
         </div>
       </div>
     );
