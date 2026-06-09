@@ -12,7 +12,18 @@ let cachedCategoryMappings = null;
 export async function getReports() {
   const q = query(collection(db, REPORTS_COLLECTION), orderBy('dateString', 'desc'));
   const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  return snapshot.docs.map(doc => {
+    const data = doc.data();
+    const { rawText, ...rest } = data;
+    return { id: doc.id, ...rest };
+  });
+}
+
+export async function getReportRawText(dateString) {
+  const q = query(collection(db, REPORTS_COLLECTION), where('dateString', '==', dateString));
+  const snapshot = await getDocs(q);
+  if (snapshot.empty) return null;
+  return snapshot.docs[0].data().rawText || '';
 }
 
 export async function getReportByDate(dateString) {
@@ -110,7 +121,18 @@ export async function saveReport(parsedData, existingId = null) {
 
 export async function getProducts() {
   const snapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  return snapshot.docs.map(doc => {
+    const data = doc.data();
+    const { dailyHistory, ...rest } = data;
+    return { id: doc.id, ...rest };
+  });
+}
+
+export async function getProductDetail(name) {
+  const ref = doc(db, PRODUCTS_COLLECTION, name);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...snap.data() };
 }
 
 export async function getReportCount() {
