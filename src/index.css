@@ -191,3 +191,9 @@ details > :not(summary) { animation: details-fade 0.25s ease-out; }
   button, a, [role="button"] { touch-action: manipulation; }
   .btn-primary, .btn-secondary { min-height: 44px; }
 }
+
+/* ─── Mobile Chart Heights ─── */
+@media (max-width: 640px) {
+  .recharts-wrapper { height: 180px !important; }
+  .recharts-responsive-container { height: 180px !important; }
+}

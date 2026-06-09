@@ -360,7 +360,7 @@ export default function Dashboard() {
       {/* ─── REVENUE & ORDERS ─── */}
       <Section title="Revenue & Orders" subtitle="Daily revenue, order types, and breakdown" onExpand={() => setExpandedSection('Revenue & Orders')}>
         <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3 cursor-pointer hover:shadow-md hover:border-accent-gold/15 transition-all duration-300 group/card" onClick={() => setExpandedSection('Revenue & Orders')}>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2.5 sm:gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
             <div className="lg:col-span-2">
               <RevenueChart reports={filteredReports} loading={reportsLoading} />
             </div>
@@ -392,7 +392,7 @@ export default function Dashboard() {
       {/* ─── WEEKDAY & CATEGORY ─── */}
       <Section title="Weekday & Category" subtitle="Order patterns by day and product category" onExpand={() => setExpandedSection('Weekday & Category')}>
         <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3 cursor-pointer hover:shadow-md hover:border-blue-500/15 transition-all duration-300 group/card" onClick={() => setExpandedSection('Weekday & Category')}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5 sm:gap-3">
             <WeekdayChart reports={filteredReports} loading={reportsLoading} />
             <CategoryChart products={products} loading={reportsLoading} />
           </div>

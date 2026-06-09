@@ -143,6 +143,7 @@ function MiniSection({ title, type, count, children, onClick }) {
 
 export default function ProductsOverview({ products, reports, latestReport }) {
   const [modal, setModal] = useState(null);
+  const [showMore, setShowMore] = useState(false);
 
   const newProducts = useMemo(() => computeNewProducts(products || [], reports || []), [products, reports]);
   const newTop = useMemo(() => newProducts.slice(0, 5), [newProducts]);
@@ -198,44 +199,6 @@ export default function ProductsOverview({ products, reports, latestReport }) {
           )}
         </MiniSection>
 
-        {/* Today's Products */}
-        <MiniSection title="Today's Products" type="today" count={todayProducts.length} onClick={() => openModal('today', todayProducts)}>
-          {todayProducts.length === 0 ? (
-            <p className="text-[10px] text-text-muted py-2 text-center">No products today</p>
-          ) : (
-            <div className="space-y-0.5">
-              {todayProducts.map((p, i) => (
-                <div key={p.name} className="flex items-center justify-between py-1">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="w-4 h-4 rounded-md bg-accent-teal/10 text-accent-teal text-[8px] font-mono flex items-center justify-center">{i + 1}</span>
-                    <span className="text-[11px] font-medium text-text-primary truncate">{p.name}</span>
-                  </div>
-                  <span className="text-[10px] font-mono text-accent-teal font-semibold">×{p.quantity}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </MiniSection>
-
-        {/* New This Week */}
-        <MiniSection title="New This Week" type="new" count={newProducts.length} onClick={() => openModal('new', newTop)}>
-          {newTop.length === 0 ? (
-            <p className="text-[10px] text-text-muted py-2 text-center">No new products</p>
-          ) : (
-            <div className="space-y-0.5">
-              {newTop.map((p, i) => (
-                <div key={p.name} className="flex items-center justify-between py-1">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="w-4 h-4 rounded-md bg-blue-500/10 text-blue-500 text-[8px] font-mono flex items-center justify-center">{i + 1}</span>
-                    <span className="text-[11px] font-medium text-text-primary truncate">{p.name}</span>
-                  </div>
-                  <span className="text-[10px] font-mono text-blue-500 font-semibold">{p.totalQuantitySold || 0} sold</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </MiniSection>
-
         {/* Dead Stock */}
         <MiniSection title="Dead Stock" type="dead" count={deadStock.length} onClick={() => openModal('dead', deadStock)}>
           {deadStock.length === 0 ? (
@@ -254,7 +217,60 @@ export default function ProductsOverview({ products, reports, latestReport }) {
             </div>
           )}
         </MiniSection>
+
+        {/* Expanded sections - Today's + New This Week */}
+        {showMore && (
+          <>
+            <MiniSection title="Today's Products" type="today" count={todayProducts.length} onClick={() => openModal('today', todayProducts)}>
+              {todayProducts.length === 0 ? (
+                <p className="text-[10px] text-text-muted py-2 text-center">No products today</p>
+              ) : (
+                <div className="space-y-0.5">
+                  {todayProducts.map((p, i) => (
+                    <div key={p.name} className="flex items-center justify-between py-1">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="w-4 h-4 rounded-md bg-accent-teal/10 text-accent-teal text-[8px] font-mono flex items-center justify-center">{i + 1}</span>
+                        <span className="text-[11px] font-medium text-text-primary truncate">{p.name}</span>
+                      </div>
+                      <span className="text-[10px] font-mono text-accent-teal font-semibold">×{p.quantity}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </MiniSection>
+
+            <MiniSection title="New This Week" type="new" count={newProducts.length} onClick={() => openModal('new', newTop)}>
+              {newTop.length === 0 ? (
+                <p className="text-[10px] text-text-muted py-2 text-center">No new products</p>
+              ) : (
+                <div className="space-y-0.5">
+                  {newTop.map((p, i) => (
+                    <div key={p.name} className="flex items-center justify-between py-1">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="w-4 h-4 rounded-md bg-blue-500/10 text-blue-500 text-[8px] font-mono flex items-center justify-center">{i + 1}</span>
+                        <span className="text-[11px] font-medium text-text-primary truncate">{p.name}</span>
+                      </div>
+                      <span className="text-[10px] font-mono text-blue-500 font-semibold">{p.totalQuantitySold || 0} sold</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </MiniSection>
+          </>
+        )}
       </div>
+
+      {/* View More / View Less button */}
+      <button
+        onClick={() => setShowMore(!showMore)}
+        className="w-full py-2.5 text-xs font-medium text-accent-gold bg-accent-gold/5 hover:bg-accent-gold/10 border border-accent-gold/15 rounded-xl transition-all flex items-center justify-center gap-1.5"
+      >
+        {showMore ? (
+          <>Show Less <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 15l-6-6-6 6" /></svg></>
+        ) : (
+          <>View More <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 9l6 6 6-6" /></svg></>
+        )}
+      </button>
 
       <CardModal
         open={!!modal}
