@@ -1,9 +1,7 @@
-import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { formatBDTShort } from '../../utils/formatters';
 
 export default function Header({ latestReport }) {
-  const navigate = useNavigate();
 
   return (
     <header className="flex items-center justify-between px-6 py-4 border-b border-border bg-white/90 backdrop-blur-sm sticky top-0 z-30 shadow-sm">
@@ -28,10 +26,6 @@ export default function Header({ latestReport }) {
             </div>
           </div>
         )}
-        <button onClick={() => navigate('/input')} className="btn-primary text-sm flex items-center gap-2">
-          <span className="text-lg leading-none">+</span>
-          <span className="hidden sm:inline">New Report</span>
-        </button>
       </div>
     </header>
   );

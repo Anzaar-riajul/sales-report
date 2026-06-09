@@ -148,11 +148,11 @@ Online Order update: 08 June, 2026 (Monday)
                   </svg>
                   Saving...
                 </>
-              ) : existingReport ? 'Update Report' : 'Save Report'}
+              ) : 'Save'}
             </button>
             {existingReport && (
-              <p className="text-amber-600 text-xs">
-                Report for {parsed.dateString} exists. Update will replace it.
+              <p className="text-amber-600 text-xs font-medium">
+                ⚠ Report for {parsed.dateString} already exists. Save will overwrite.
               </p>
             )}
           </div>

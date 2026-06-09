@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { subDays } from 'date-fns';
 import { useReports } from '../hooks/useReports';
 import { useProducts } from '../hooks/useProducts';
 import { computeAlerts, computeDailyReport } from '../utils/analytics';
@@ -13,7 +12,6 @@ import CategoryChart from '../components/Dashboard/CategoryChart';
 import ComparisonCards from '../components/Dashboard/ComparisonCards';
 import RollingAvgChart from '../components/Dashboard/RollingAvgChart';
 import ProductIntelligence from '../components/Dashboard/ProductIntelligence';
-import DailySummaryReport from '../components/Dashboard/DailySummaryReport';
 import AdvancedTrends from '../components/Dashboard/AdvancedTrends';
 import YearlyReport from '../components/Dashboard/YearlyReport';
 import ProductRanking from '../components/Products/ProductRanking';
@@ -51,7 +49,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { reports, loading: reportsLoading } = useReports();
   const { products } = useProducts();
-  const [timeRange, setTimeRange] = useState('today');
+  const [timeRange, setTimeRange] = useState(7);
 
   const sortedReports = useMemo(() => {
     if (!reports || reports.length === 0) return [];
@@ -60,9 +58,7 @@ export default function Dashboard() {
 
   const filteredReports = useMemo(() => {
     if (timeRange === 'all') return sortedReports;
-    if (timeRange === 'today') return sortedReports.slice(0, 1);
-    const cutoff = subDays(new Date(), timeRange);
-    return sortedReports.filter(r => new Date(r.dateString) >= cutoff);
+    return sortedReports.slice(0, timeRange === 'today' ? 1 : timeRange);
   }, [sortedReports, timeRange]);
 
   const latestReport = sortedReports.length > 0 ? sortedReports[0] : null;
@@ -77,7 +73,7 @@ export default function Dashboard() {
         <div className="flex items-center justify-between">
           <h2 className="font-semibold text-xl sm:text-2xl text-text-primary">Dashboard</h2>
         </div>
-        <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
           {Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -112,11 +108,10 @@ export default function Dashboard() {
         <div>
           <h2 className="font-semibold text-xl sm:text-2xl text-text-primary">Dashboard</h2>
           <p className="text-xs text-text-muted mt-0.5">
-            {filteredReports.length} reports · {timeRange === 'today' ? 'Today' : timeRange === 'all' ? 'All time' : `Last ${timeRange} days`}
+            {filteredReports.length} reports · {timeRange === 'today' ? 'Latest' : timeRange === 'all' ? 'All time' : `Last ${timeRange}`}
           </p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
-          <DailySummaryReport latestReport={latestReport} reports={sortedReports} products={products} />
           <div className="flex gap-1 bg-bg-elevated/50 p-0.5 rounded-lg border border-border">
             {RANGES.map(r => (
               <button
