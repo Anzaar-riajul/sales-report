@@ -6,7 +6,7 @@ export default function Header({ latestReport }) {
   const navigate = useNavigate();
 
   return (
-    <header className="flex items-center justify-between px-6 py-4 border-b border-border bg-bg-primary/80 backdrop-blur-sm sticky top-0 z-30">
+    <header className="flex items-center justify-between px-6 py-4 border-b border-border bg-white/90 backdrop-blur-sm sticky top-0 z-30 shadow-sm">
       <div>
         <h2 className="text-sm text-text-muted">Today</h2>
         <p className="text-text-primary font-medium">{format(new Date(), 'EEEE, MMMM dd, yyyy')}</p>

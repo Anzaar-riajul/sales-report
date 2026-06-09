@@ -12,7 +12,7 @@ function RollingLineChart({ data }) {
         <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
         <YAxis tick={{ fontSize: 11 }} />
         <Tooltip
-          contentStyle={{ background: '#161A23', border: '1px solid #1E2330', borderRadius: '8px' }}
+          contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }}
         />
         <Line type="monotone" dataKey="value" stroke="#C9A84C" strokeWidth={2} dot={false} name="Value" />
       </LineChart>

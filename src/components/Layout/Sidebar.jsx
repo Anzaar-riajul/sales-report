@@ -17,7 +17,7 @@ export default function Sidebar({ user }) {
 
   return (
     <>
-      <aside className="hidden lg:flex flex-col fixed left-0 top-0 h-screen w-60 bg-bg-card border-r border-border z-40">
+      <aside className="hidden lg:flex flex-col fixed left-0 top-0 h-screen w-60 bg-bg-card border-r border-border z-40 shadow-sm">
         <div className="p-5 border-b border-border">
           <h1 className="font-display text-xl text-accent-gold">Anzaar</h1>
           <p className="text-text-muted text-xs mt-0.5">Islamic Lifestyle</p>
@@ -63,7 +63,7 @@ export default function Sidebar({ user }) {
         </div>
       </aside>
 
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-bg-card border-t border-border z-40 flex justify-around py-2 px-1">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-bg-card border-t border-border z-40 flex justify-around py-2 px-1 shadow-[0_-2px_8px_rgba(0,0,0,0.04)]">
         {navItems.map((item) => (
           <NavLink
             key={item.path}

@@ -4,7 +4,7 @@ import Card from '../UI/Card';
 import { computeCategoryBreakdown } from '../../utils/analytics';
 import { ChartSkeleton } from '../UI/Loader';
 
-const COLORS = ['#C9A84C', '#2DD4BF', '#FB7185', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6', '#64748B'];
+const COLORS = ['#C9A84C', '#0D9488', '#E11D48', '#F59E0B', '#8B5CF6', '#EC4899', '#14B8A6', '#64748B'];
 
 export default function CategoryBreakdown({ products, loading }) {
   const data = useMemo(() => computeCategoryBreakdown(products || []), [products]);
@@ -31,11 +31,11 @@ export default function CategoryBreakdown({ products, loading }) {
             ))}
           </Pie>
           <Tooltip
-            contentStyle={{ background: '#161A23', border: '1px solid #1E2330', borderRadius: '8px' }}
+            contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }}
             formatter={(value, name) => [`${value} units`, name]}
           />
           <Legend
-            formatter={(value) => <span style={{ color: '#F1F5F9' }}>{value}</span>}
+            formatter={(value) => <span style={{ color: '#0F172A' }}>{value}</span>}
           />
         </PieChart>
       </ResponsiveContainer>

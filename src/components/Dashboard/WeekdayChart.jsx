@@ -14,7 +14,7 @@ export default function WeekdayChart({ reports, loading }) {
           <XAxis dataKey="day" tick={{ fontSize: 10 }} />
           <YAxis tick={{ fontSize: 11 }} />
           <Tooltip
-            contentStyle={{ background: '#161A23', border: '1px solid #1E2330', borderRadius: '8px' }}
+            contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }}
             formatter={(value, name) => {
               if (name === 'avgOrders') return [`${value} orders`, 'Avg Orders'];
               if (name === 'avgValue') return [`BDT ${value.toLocaleString('en-BD')}`, 'Avg Value'];

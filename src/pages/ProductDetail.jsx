@@ -126,7 +126,7 @@ export default function ProductDetail() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(d) => formatDate(d)} interval="preserveStartEnd" />
               <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
-              <Tooltip contentStyle={{ background: '#161A23', border: '1px solid #1E2330', borderRadius: '8px' }}
+              <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }}
                 labelFormatter={(label) => formatDate(label)}
                 formatter={(value) => [value, 'Quantity']}
               />
@@ -147,10 +147,10 @@ export default function ProductDetail() {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(d) => formatDate(d)} interval="preserveStartEnd" />
                 <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
-                <Tooltip contentStyle={{ background: '#161A23', border: '1px solid #1E2330', borderRadius: '8px' }}
+                <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }}
                   labelFormatter={(label) => formatDate(label)}
                 />
-                <Legend formatter={(value) => <span style={{ color: '#F1F5F9' }}>{value}</span>} />
+                <Legend formatter={(value) => <span style={{ color: '#0F172A' }}>{value}</span>} />
                 <Line type="monotone" dataKey="quantity" stroke="#C9A84C" strokeWidth={2} dot={true} name="Quantity Sold" />
                 <Line type="monotone" dataKey="totalOrderValue" stroke="#2DD4BF" strokeWidth={2} dot={false} name="Order Value (BDT)" />
               </LineChart>

@@ -198,10 +198,10 @@ export default function Analytics() {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
                   <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} />
-                  <Tooltip contentStyle={{ background: '#161A23', border: '1px solid #1E2330', borderRadius: '8px' }}
+                  <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }}
                     formatter={(value) => [formatBDT(value), '']}
                   />
-                  <Legend formatter={(value) => <span style={{ color: '#F1F5F9' }}>{value}</span>} />
+                  <Legend formatter={(value) => <span style={{ color: '#0F172A' }}>{value}</span>} />
                   <Bar dataKey="advance" fill="#2DD4BF" radius={[4, 4, 0, 0]} name="Advance" stackId="a" />
                   <Bar dataKey="revenue" fill="#C9A84C" radius={[4, 4, 0, 0]} name="Revenue" stackId="b" />
                 </BarChart>
@@ -219,7 +219,7 @@ export default function Analytics() {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
                   <YAxis tick={{ fontSize: 11 }} domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
-                  <Tooltip contentStyle={{ background: '#161A23', border: '1px solid #1E2330', borderRadius: '8px' }}
+                  <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }}
                     formatter={(value) => [`${value}%`, 'Advance Rate']}
                   />
                   <Line type="monotone" dataKey="rate" stroke="#C9A84C" strokeWidth={2} dot={false} name="Advance Rate" />
@@ -238,7 +238,7 @@ export default function Analytics() {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
                   <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} />
-                  <Tooltip contentStyle={{ background: '#161A23', border: '1px solid #1E2330', borderRadius: '8px' }}
+                  <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }}
                     formatter={(value) => [formatBDT(value), 'Avg Order Value']}
                   />
                   <Line type="monotone" dataKey="aov" stroke="#2DD4BF" strokeWidth={2} dot={false} name="AOV" />
@@ -261,8 +261,8 @@ export default function Analytics() {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
                   <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip contentStyle={{ background: '#161A23', border: '1px solid #1E2330', borderRadius: '8px' }} />
-                  <Legend formatter={(value) => <span style={{ color: '#F1F5F9' }}>{value}</span>} />
+                  <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }} />
+                  <Legend formatter={(value) => <span style={{ color: '#0F172A' }}>{value}</span>} />
                   <Area type="monotone" dataKey="regular" stackId="1" stroke="#C9A84C" fill="#C9A84C" fillOpacity={0.3} name="Regular" />
                   <Area type="monotone" dataKey="customize" stackId="1" stroke="#2DD4BF" fill="#2DD4BF" fillOpacity={0.3} name="Customize" />
                 </AreaChart>
@@ -281,7 +281,7 @@ export default function Analytics() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="day" tick={{ fontSize: 11 }} />
                     <YAxis tick={{ fontSize: 11 }} />
-                    <Tooltip contentStyle={{ background: '#161A23', border: '1px solid #1E2330', borderRadius: '8px' }}
+                    <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }}
                       formatter={(value, name) => [value, name === 'avgOrders' ? 'Avg Orders' : 'Avg Value']}
                     />
                     <Bar dataKey="avgOrders" fill="#C9A84C" radius={[4, 4, 0, 0]} name="avgOrders" />
@@ -300,7 +300,7 @@ export default function Analytics() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
                     <YAxis tick={{ fontSize: 11 }} domain={[0, 'auto']} />
-                    <Tooltip contentStyle={{ background: '#161A23', border: '1px solid #1E2330', borderRadius: '8px' }}
+                    <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }}
                       formatter={(value) => [value, 'Products/Order']}
                     />
                     <Line type="monotone" dataKey="ratio" stroke="#2DD4BF" strokeWidth={2} dot={false} name="Products/Order" />
@@ -324,8 +324,8 @@ export default function Analytics() {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
                   <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip contentStyle={{ background: '#161A23', border: '1px solid #1E2330', borderRadius: '8px' }} />
-                  <Legend formatter={(value) => <span style={{ color: '#F1F5F9' }}>{value}</span>} />
+                  <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }} />
+                  <Legend formatter={(value) => <span style={{ color: '#0F172A' }}>{value}</span>} />
                   <Line type="monotone" dataKey="avgOrder" stroke="#C9A84C" strokeWidth={2} dot={false} name="Avg Orders (7d)" />
                   <Line type="monotone" dataKey="totalOrder" stroke="#64748B" strokeWidth={1} dot={false} name="Daily Orders" strokeDasharray="4 4" />
                 </LineChart>
@@ -344,10 +344,10 @@ export default function Analytics() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
                     <YAxis tick={{ fontSize: 11 }} domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
-                    <Tooltip contentStyle={{ background: '#161A23', border: '1px solid #1E2330', borderRadius: '8px' }}
+                    <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }}
                       formatter={(value) => [`${value}%`, 'Customize %']}
                     />
-                    <Line type="monotone" dataKey="pct" stroke="#FB7185" strokeWidth={2} dot={false} name="Customize %" />
+                    <Line type="monotone" dataKey="pct" stroke="#E11D48" strokeWidth={2} dot={false} name="Customize %" />
                   </LineChart>
                 </ResponsiveContainer>
               )}
@@ -363,7 +363,7 @@ export default function Analytics() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
                     <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${v.toFixed(0)}`} />
-                    <Tooltip contentStyle={{ background: '#161A23', border: '1px solid #1E2330', borderRadius: '8px' }}
+                    <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }}
                       formatter={(value) => [formatBDT(value), 'Revenue/Product']}
                     />
                     <Line type="monotone" dataKey="value" stroke="#C9A84C" strokeWidth={2} dot={false} name="Rev/Product" />
@@ -489,7 +489,7 @@ export default function Analytics() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="year" tick={{ fontSize: 11 }} />
                     <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} />
-                    <Tooltip contentStyle={{ background: '#161A23', border: '1px solid #1E2330', borderRadius: '8px' }}
+                    <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }}
                       formatter={(value) => [formatBDT(value), 'Revenue']}
                     />
                     <Bar dataKey="value" fill="#C9A84C" radius={[4, 4, 0, 0]} />

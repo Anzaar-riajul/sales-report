@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { subDays } from 'date-fns';
 import { useReports } from '../hooks/useReports';
 import { useProducts } from '../hooks/useProducts';
-import { filterReportsByRange } from '../utils/dateUtils';
 import { computeAlerts, computeDailyReport } from '../utils/analytics';
 import DynamicKPIs from '../components/Dashboard/DynamicKPIs';
 import RevenueChart from '../components/Dashboard/RevenueChart';
@@ -13,14 +12,16 @@ import WeekdayChart from '../components/Dashboard/WeekdayChart';
 import CategoryChart from '../components/Dashboard/CategoryChart';
 import ComparisonCards from '../components/Dashboard/ComparisonCards';
 import RollingAvgChart from '../components/Dashboard/RollingAvgChart';
+import ProductIntelligence from '../components/Dashboard/ProductIntelligence';
+import DailySummaryReport from '../components/Dashboard/DailySummaryReport';
+import AdvancedTrends from '../components/Dashboard/AdvancedTrends';
+import YearlyReport from '../components/Dashboard/YearlyReport';
+import ProductRanking from '../components/Products/ProductRanking';
 import DailyReport from '../components/Reports/DailyReport';
 import WeeklyReport from '../components/Reports/WeeklyReport';
 import MonthlyReport from '../components/Reports/MonthlyReport';
-import ProductIntelligence from '../components/Dashboard/ProductIntelligence';
-import DailySummaryReport from '../components/Dashboard/DailySummaryReport';
 import Alert from '../components/UI/Alert';
-import Card from '../components/UI/Card';
-import { CardSkeleton } from '../components/UI/Loader';
+import { CardSkeleton, ChartSkeleton } from '../components/UI/Loader';
 
 const RANGES = [
   { label: '7d', value: 7 },
@@ -29,6 +30,21 @@ const RANGES = [
   { label: '90d', value: 90 },
   { label: 'All', value: 'all' },
 ];
+
+function CollapsibleSection({ title, count, defaultOpen = true, children }) {
+  return (
+    <details open={defaultOpen} className="group">
+      <summary className="flex items-center gap-2 cursor-pointer mb-3 list-none">
+        <span className="text-[10px] text-text-muted transition-transform group-open:rotate-90">▶</span>
+        <h3 className="font-semibold text-text-primary text-base sm:text-lg">{title}</h3>
+        {count !== undefined && (
+          <span className="text-xs text-text-muted bg-bg-elevated px-2 py-0.5 rounded-full">{count}</span>
+        )}
+      </summary>
+      {children}
+    </details>
+  );
+}
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -55,15 +71,15 @@ export default function Dashboard() {
 
   if (reportsLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-2xl text-text-primary">Dashboard</h2>
+          <h2 className="font-semibold text-xl sm:text-2xl text-text-primary">Dashboard</h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-4">
           {Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)}
+          {Array.from({ length: 4 }).map((_, i) => <ChartSkeleton key={i} />)}
         </div>
       </div>
     );
@@ -72,14 +88,14 @@ export default function Dashboard() {
   if (!latestReport) {
     return (
       <div className="space-y-6">
-        <h2 className="font-display text-2xl text-text-primary">Dashboard</h2>
-        <div className="glass-card p-12 text-center">
-          <div className="w-16 h-16 bg-accent-gold/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl text-accent-gold">+</span>
+        <h2 className="font-semibold text-xl sm:text-2xl text-text-primary">Dashboard</h2>
+        <div className="glass-card p-8 sm:p-12 text-center">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-accent-gold/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-xl sm:text-2xl text-accent-gold">+</span>
           </div>
-          <h3 className="font-display text-xl text-text-primary mb-2">No Reports Yet</h3>
+          <h3 className="font-semibold text-lg sm:text-xl text-text-primary mb-2">No Reports Yet</h3>
           <p className="text-text-muted text-sm mb-6">Paste your first daily order report to start tracking.</p>
-          <button onClick={() => navigate('/input')} className="btn-primary">
+          <button onClick={() => navigate('/input')} className="btn-primary text-sm sm:text-base">
             Paste Your First Report
           </button>
         </div>
@@ -88,23 +104,25 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-5">
-      {/* Header */}
+    <div className="space-y-4 sm:space-y-5">
+      {/* ═══ HEADER ═══ */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="font-display text-2xl text-text-primary">Dashboard</h2>
-          <p className="text-xs text-text-muted mt-0.5">{filteredReports.length} reports · Last {timeRange === 'all' ? 'all time' : `${timeRange} days`}</p>
+          <h2 className="font-semibold text-xl sm:text-2xl text-text-primary">Dashboard</h2>
+          <p className="text-xs text-text-muted mt-0.5">
+            {filteredReports.length} reports · Last {timeRange === 'all' ? 'all time' : `${timeRange} days`}
+          </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <DailySummaryReport latestReport={latestReport} reports={sortedReports} products={products} />
-          <div className="flex gap-1.5 bg-bg-card/50 p-1 rounded-lg border border-border">
+          <div className="flex gap-1 bg-bg-elevated/50 p-0.5 rounded-lg border border-border">
             {RANGES.map(r => (
               <button
                 key={r.value}
                 onClick={() => setTimeRange(r.value)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                className={`px-2 sm:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
                   timeRange === r.value
-                    ? 'bg-accent-gold/15 text-accent-gold border border-accent-gold/20 shadow-sm'
+                    ? 'bg-white text-accent-gold border border-accent-gold/20 shadow-sm'
                     : 'text-text-muted hover:text-text-primary'
                 }`}
               >
@@ -115,65 +133,85 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Alerts */}
+      {/* ═══ ALERTS ═══ */}
       {alerts.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
           {alerts.slice(0, 4).map((alert, i) => (
-            <div key={i} className="flex-shrink-0 min-w-[240px]">
+            <div key={i} className="flex-shrink-0 min-w-[200px] sm:min-w-[240px]">
               <Alert message={alert.message} severity={alert.severity} />
             </div>
           ))}
           {alerts.length > 4 && (
             <button
               onClick={() => navigate('/alerts')}
-              className="flex-shrink-0 px-4 py-2 text-xs text-accent-gold hover:underline bg-bg-card/50 rounded-lg border border-border"
+              className="flex-shrink-0 px-3 sm:px-4 py-2 text-xs text-accent-gold hover:underline bg-white rounded-lg border border-border shadow-sm"
             >
-              +{alerts.length - 4} more
+              +{alerts.length - 4}
             </button>
           )}
         </div>
       )}
 
-      {/* KPI Cards */}
+      {/* ═══ KPI CARDS ═══ */}
       <DynamicKPIs latestReport={latestReport} previousReport={previousReport} />
 
-      {/* Row 1: Revenue + Order Split */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2">
-          <RevenueChart reports={filteredReports} loading={reportsLoading} />
+      {/* ═══ REVENUE & ORDERS ═══ */}
+      <CollapsibleSection title="Revenue & Orders">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2">
+            <RevenueChart reports={filteredReports} loading={reportsLoading} />
+          </div>
+          <OrderTypeChart report={latestReport} loading={reportsLoading} />
         </div>
-        <OrderTypeChart report={latestReport} loading={reportsLoading} />
-      </div>
+        <div className="mt-4">
+          <DailyReport reports={filteredReports} loading={reportsLoading} />
+        </div>
+      </CollapsibleSection>
 
-      {/* Row 2: Daily + Weekly */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <DailyReport reports={filteredReports} loading={reportsLoading} />
-        <WeeklyReport reports={filteredReports} loading={reportsLoading} />
-      </div>
+      {/* ═══ PERIOD ANALYSIS ═══ */}
+      <CollapsibleSection title="Period Analysis">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <WeeklyReport reports={filteredReports} loading={reportsLoading} />
+          <MonthlyReport reports={filteredReports} loading={reportsLoading} />
+          <YearlyReport reports={sortedReports} loading={reportsLoading} />
+        </div>
+      </CollapsibleSection>
 
-      {/* Row 3: Monthly + Weekday */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <MonthlyReport reports={filteredReports} loading={reportsLoading} />
-        <WeekdayChart reports={filteredReports} loading={reportsLoading} />
-      </div>
+      {/* ═══ WEEKDAY & CATEGORY ═══ */}
+      <CollapsibleSection title="Weekday & Category">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <WeekdayChart reports={filteredReports} loading={reportsLoading} />
+          <CategoryChart products={products} loading={reportsLoading} />
+        </div>
+      </CollapsibleSection>
 
-      {/* Row 4: Category + Rolling/ProductsPerOrder */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <CategoryChart products={products} loading={reportsLoading} />
-        <RollingAvgChart reports={filteredReports} loading={reportsLoading} />
-      </div>
-
-      {/* Comparison Cards */}
-      <ComparisonCards reports={sortedReports} loading={reportsLoading} />
-
-      {/* Product Intelligence */}
-      <div>
-        <h3 className="font-display text-lg text-text-primary mb-4">🧠 Stock Intelligence</h3>
+      {/* ═══ PRODUCT INTELLIGENCE ═══ */}
+      <CollapsibleSection title="Stock Intelligence" count={products?.length}>
         <ProductIntelligence products={products} reports={sortedReports} />
-      </div>
+      </CollapsibleSection>
 
-      {/* Top Products - full width */}
-      <TopProductsTable products={latestReport?.products || []} loading={reportsLoading} />
+      {/* ═══ TRENDS & ROLLING ═══ */}
+      <CollapsibleSection title="Rolling & Products/Order">
+        <RollingAvgChart reports={filteredReports} loading={reportsLoading} />
+      </CollapsibleSection>
+
+      {/* ═══ ADVANCED TRENDS ═══ */}
+      <AdvancedTrends reports={filteredReports} />
+
+      {/* ═══ COMPARISONS ═══ */}
+      <CollapsibleSection title="Comparisons">
+        <ComparisonCards reports={sortedReports} loading={reportsLoading} />
+      </CollapsibleSection>
+
+      {/* ═══ PRODUCT RANKING ═══ */}
+      <CollapsibleSection title="Product Ranking" count={products?.length}>
+        <ProductRanking products={products} loading={reportsLoading} />
+      </CollapsibleSection>
+
+      {/* ═══ TODAY'S PRODUCTS ═══ */}
+      <CollapsibleSection title="Today's Products">
+        <TopProductsTable products={latestReport?.products || []} loading={reportsLoading} />
+      </CollapsibleSection>
     </div>
   );
 }

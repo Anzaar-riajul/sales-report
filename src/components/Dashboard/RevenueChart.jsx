@@ -49,7 +49,7 @@ export default function RevenueChart({ reports, loading }) {
             <XAxis dataKey="date" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
             <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `BDT ${(v / 1000).toFixed(0)}K`} />
             <Tooltip
-              contentStyle={{ background: '#161A23', border: '1px solid #1E2330', borderRadius: '8px' }}
+              contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }}
               formatter={(value) => [formatBDT(value), '']}
             />
             <Line type="monotone" dataKey="revenue" stroke="#C9A84C" strokeWidth={2} dot={false} name="Revenue" />

@@ -3,15 +3,15 @@
 @tailwind utilities;
 
 :root {
-  --color-bg-primary: #0D0F14;
-  --color-bg-card: #161A23;
-  --color-bg-elevated: #1E2330;
+  --color-bg-primary: #F8FAFC;
+  --color-bg-card: #FFFFFF;
+  --color-bg-elevated: #F1F5F9;
   --color-accent-gold: #C9A84C;
-  --color-accent-teal: #2DD4BF;
-  --color-accent-rose: #FB7185;
-  --color-text-primary: #F1F5F9;
+  --color-accent-teal: #0D9488;
+  --color-accent-rose: #E11D48;
+  --color-text-primary: #0F172A;
   --color-text-muted: #64748B;
-  --color-border: #1E2330;
+  --color-border: #E2E8F0;
 }
 
 * {
@@ -29,7 +29,7 @@ body {
 }
 
 .font-display {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .font-mono {
@@ -45,7 +45,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-bg-elevated);
+  background: var(--color-border);
   border-radius: 3px;
 }
 
@@ -55,30 +55,28 @@ body {
 
 @layer components {
   .glass-card {
-    @apply bg-bg-card border border-border rounded-xl;
-    backdrop-filter: blur(12px);
+    @apply bg-[#FFFFFF] border border-border rounded-xl shadow-sm;
   }
 
   .glass-card-elevated {
-    @apply bg-bg-elevated border border-border rounded-xl;
-    backdrop-filter: blur(12px);
+    @apply bg-[#FFFFFF] border border-border rounded-xl shadow-md;
   }
 
   .btn-primary {
-    @apply bg-accent-gold text-bg-primary font-semibold px-6 py-2.5 rounded-lg
+    @apply bg-accent-gold text-white font-semibold px-6 py-2.5 rounded-lg
            transition-all duration-200 ease-in-out
            hover:brightness-110 hover:shadow-lg hover:shadow-accent-gold/20
            active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-secondary {
-    @apply bg-bg-elevated text-text-primary border border-border px-6 py-2.5 rounded-lg
+    @apply bg-white text-text-primary border border-border px-6 py-2.5 rounded-lg
            transition-all duration-200 ease-in-out
-           hover:bg-border active:scale-[0.98];
+           hover:bg-bg-elevated active:scale-[0.98];
   }
 
   .input-dark {
-    @apply bg-bg-card border border-border rounded-lg px-4 py-2.5 text-text-primary
+    @apply bg-white border border-border rounded-lg px-4 py-2.5 text-text-primary
            placeholder:text-text-muted/50
            focus:outline-none focus:border-accent-gold/50 focus:ring-1 focus:ring-accent-gold/30
            transition-all duration-200;
@@ -89,46 +87,20 @@ body {
   }
 
   .section-title {
-    @apply font-display text-xl font-semibold text-text-primary;
-  }
-
-  /* Custom Glow Animations */
-  .blob {
-    @apply absolute rounded-full filter blur-3xl opacity-30 mix-blend-screen;
-    animation: blob-bounce 10s infinite alternate;
-  }
-
-  .animation-delay-2000 {
-    animation-delay: 2s;
-  }
-  .animation-delay-4000 {
-    animation-delay: 4s;
-  }
-}
-
-@keyframes blob-bounce {
-  0% {
-    transform: translate(0px, 0px) scale(1);
-  }
-  33% {
-    transform: translate(30px, -50px) scale(1.1);
-  }
-  66% {
-    transform: translate(-20px, 20px) scale(0.9);
-  }
-  100% {
-    transform: translate(0px, 0px) scale(1);
+    @apply text-lg font-semibold text-text-primary;
   }
 }
 
 .recharts-default-tooltip {
-  background: #161A23 !important;
-  border: 1px solid #1E2330 !important;
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
   border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
 }
 
 .recharts-tooltip-label {
-  color: #F1F5F9 !important;
+  color: #0F172A !important;
+  font-weight: 600 !important;
 }
 
 .recharts-tooltip-item {
@@ -137,9 +109,42 @@ body {
 
 .recharts-cartesian-grid-horizontal line,
 .recharts-cartesian-grid-vertical line {
-  stroke: #1E2330;
+  stroke: #E2E8F0;
 }
 
 .recharts-text {
   fill: #64748B;
+}
+
+details > summary {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
+details > :not(summary) {
+  animation: details-fade 0.2s ease-out;
+}
+
+@keyframes details-fade {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  button, a, [role="button"] {
+    touch-action: manipulation;
+  }
+  .btn-primary, .btn-secondary {
+    min-height: 44px;
+  }
 }

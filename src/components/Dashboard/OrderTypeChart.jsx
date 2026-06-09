@@ -41,11 +41,11 @@ export default function OrderTypeChart({ report, loading }) {
             ))}
           </Pie>
           <Tooltip
-            contentStyle={{ background: '#161A23', border: '1px solid #1E2330', borderRadius: '8px' }}
+            contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }}
             formatter={(value, name) => [`${value} orders`, name]}
           />
           <Legend
-            formatter={(value) => <span style={{ color: '#F1F5F9' }}>{value}</span>}
+            formatter={(value) => <span style={{ color: '#0F172A' }}>{value}</span>}
           />
         </PieChart>
       </ResponsiveContainer>

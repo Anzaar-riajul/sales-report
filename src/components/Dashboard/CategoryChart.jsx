@@ -22,7 +22,7 @@ export default function CategoryChart({ products, loading }) {
           <XAxis type="number" tick={{ fontSize: 11 }} />
           <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={80} />
           <Tooltip
-            contentStyle={{ background: '#161A23', border: '1px solid #1E2330', borderRadius: '8px' }}
+            contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }}
             formatter={(value, name) => {
               if (name === 'totalQuantity') return [value, 'Qty Sold'];
               if (name === 'productCount') return [value, 'Products'];
