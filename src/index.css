@@ -43,20 +43,24 @@ body {
 
 @layer components {
   .glass-card {
-    @apply bg-[#FFFFFF] border border-border/60 rounded-2xl shadow-sm;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    @apply bg-[#FFFFFF] border border-border/40 rounded-2xl;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .glass-card:hover {
-    @apply shadow-md border-border;
-    transform: translateY(-1px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06), 0 4px 10px rgba(0,0,0,0.03);
+    border-color: rgba(226,232,240,0.8);
+    transform: translateY(-2px);
   }
 
   .glass-card-static {
-    @apply bg-[#FFFFFF] border border-border/60 rounded-2xl shadow-sm;
+    @apply bg-[#FFFFFF] border border-border/40 rounded-2xl;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
   }
 
   .glass-card-elevated {
-    @apply bg-[#FFFFFF] border border-border/60 rounded-2xl shadow-md;
+    @apply bg-[#FFFFFF] border border-border/50 rounded-2xl;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.03);
   }
 
   .btn-primary {
@@ -85,6 +89,10 @@ body {
 
   .section-title {
     @apply text-base sm:text-lg font-semibold text-text-primary tracking-tight;
+  }
+
+  .chart-container {
+    @apply bg-gradient-to-br from-white via-white to-bg-elevated/30 rounded-xl border border-border/30;
   }
 }
 

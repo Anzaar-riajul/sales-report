@@ -29,26 +29,30 @@ const RANGES = [
   { label: '30d', value: '30d' },
 ];
 
-function Section({ title, subtitle, count, defaultOpen = true, children }) {
+function Section({ title, subtitle, count, defaultOpen = true, children, icon }) {
   return (
-    <details open={defaultOpen} className="group">
-      <summary className="flex items-center justify-between cursor-pointer mb-3 list-none select-none">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <span className="w-5 h-5 rounded-lg bg-accent-gold/10 border border-accent-gold/15 flex items-center justify-center flex-shrink-0 group-open:bg-accent-gold/20 transition-colors">
-            <span className="text-[9px] text-accent-gold transition-transform group-open:rotate-90">▶</span>
+    <details open={defaultOpen} className="group relative">
+      {/* Top gradient accent line */}
+      <div className="absolute top-0 left-0 right-0 h-[2px] rounded-full bg-gradient-to-r from-accent-gold/40 via-accent-teal/30 to-transparent opacity-60 group-open:opacity-100 transition-opacity pointer-events-none" />
+
+      <summary className="flex items-center justify-between cursor-pointer mb-3 list-none select-none py-2 px-3 rounded-xl hover:bg-bg-elevated/30 transition-colors -mx-1">
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-accent-gold/15 to-accent-gold/5 border border-accent-gold/20 flex items-center justify-center flex-shrink-0 group-open:bg-accent-gold/25 transition-colors shadow-sm">
+            <span className="text-[9px] text-accent-gold transition-transform group-open:rotate-90 block duration-200">▶</span>
           </span>
           <div className="min-w-0">
-            <h3 className="font-semibold text-text-primary text-sm sm:text-base">{title}</h3>
-            {subtitle && <p className="text-[10px] sm:text-xs text-text-muted truncate">{subtitle}</p>}
+            <h3 className="font-semibold text-text-primary text-sm sm:text-[15px] tracking-tight">{title}</h3>
+            {subtitle && <p className="text-[10px] sm:text-[11px] text-text-muted/70 truncate mt-0.5">{subtitle}</p>}
           </div>
         </div>
         {count !== undefined && (
-          <span className="text-[10px] font-mono text-text-muted bg-bg-elevated/80 px-2 py-0.5 rounded-full border border-border/50 flex-shrink-0 ml-2">
+          <span className="text-[9px] font-mono text-text-muted/60 bg-bg-elevated/80 px-2 py-0.5 rounded-full border border-border/40 flex-shrink-0 ml-2">
             {count}
           </span>
         )}
       </summary>
-      <div className="pl-0 sm:pl-7">
+
+      <div className="pl-0 sm:pl-10 pb-1">
         {children}
       </div>
     </details>
@@ -271,50 +275,66 @@ export default function Dashboard() {
 
       {/* ─── REVENUE & ORDERS ─── */}
       <Section title="Revenue & Orders" subtitle="Daily revenue, order types, and breakdown">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
-          <div className="lg:col-span-2">
-            <RevenueChart reports={filteredReports} loading={reportsLoading} />
+        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-3 sm:p-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+            <div className="lg:col-span-2">
+              <RevenueChart reports={filteredReports} loading={reportsLoading} />
+            </div>
+            <OrderTypeChart report={latestReport} loading={reportsLoading} />
           </div>
-          <OrderTypeChart report={latestReport} loading={reportsLoading} />
-        </div>
-        <div className="mt-3 sm:mt-4">
-          <DailyReport reports={filteredReports} loading={reportsLoading} />
+          <div className="mt-3 sm:mt-4">
+            <DailyReport reports={filteredReports} loading={reportsLoading} />
+          </div>
         </div>
       </Section>
 
       {/* ─── PERIOD ANALYSIS ─── */}
       <Section title="Period Analysis" subtitle="Weekly, monthly, and yearly summaries">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          <WeeklyReport reports={filteredReports} loading={reportsLoading} />
-          <MonthlyReport reports={filteredReports} loading={reportsLoading} />
-          <YearlyReport reports={sortedReports} loading={reportsLoading} />
+        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-3 sm:p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            <WeeklyReport reports={filteredReports} loading={reportsLoading} />
+            <MonthlyReport reports={filteredReports} loading={reportsLoading} />
+            <YearlyReport reports={sortedReports} loading={reportsLoading} />
+          </div>
         </div>
       </Section>
 
       {/* ─── WEEKDAY & CATEGORY ─── */}
       <Section title="Weekday & Category" subtitle="Order patterns by day and product category">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-          <WeekdayChart reports={filteredReports} loading={reportsLoading} />
-          <CategoryChart products={products} loading={reportsLoading} />
+        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-3 sm:p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <WeekdayChart reports={filteredReports} loading={reportsLoading} />
+            <CategoryChart products={products} loading={reportsLoading} />
+          </div>
         </div>
       </Section>
 
       {/* ─── STOCK INTELLIGENCE ─── */}
       <Section title="Stock Intelligence" subtitle="Restock recommendations and product health" count={products?.length}>
-        <ProductIntelligence products={products} reports={sortedReports} />
+        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-3 sm:p-4">
+          <ProductIntelligence products={products} reports={sortedReports} />
+        </div>
       </Section>
 
       {/* ─── ROLLING & TRENDS ─── */}
       <Section title="Rolling Averages" subtitle="7/14/30-day moving trends">
-        <RollingAvgChart reports={filteredReports} loading={reportsLoading} />
+        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-3 sm:p-4">
+          <RollingAvgChart reports={filteredReports} loading={reportsLoading} />
+        </div>
       </Section>
 
       {/* ─── ADVANCED TRENDS ─── */}
-      <AdvancedTrends reports={filteredReports} />
+      <Section title="Advanced Trends" subtitle="Revenue, AOV, and product velocity over time">
+        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-3 sm:p-4">
+          <AdvancedTrends reports={filteredReports} />
+        </div>
+      </Section>
 
       {/* ─── COMPARISONS ─── */}
       <Section title="Comparisons" subtitle="Week-over-week, month-over-month, same-day">
-        <ComparisonCards reports={sortedReports} loading={reportsLoading} />
+        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-3 sm:p-4">
+          <ComparisonCards reports={sortedReports} loading={reportsLoading} />
+        </div>
       </Section>
 
     </div>
