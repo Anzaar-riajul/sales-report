@@ -553,35 +553,34 @@ export default function Dashboard() {
         </div>
       </Section>
 
-      {/* ─── PERIOD ANALYSIS + ADVANCED TRENDS ─── */}
-      <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-        <Section title="Period Analysis" subtitle="Weekly, monthly, and yearly summaries" onExpand={() => setExpandedSection('Period Analysis')}>
-          <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3 cursor-pointer hover:shadow-md hover:border-accent-teal/15 transition-all duration-300 group/card" onClick={() => setExpandedSection('Period Analysis')}>
-            <div className="space-y-2.5 sm:space-y-3">
-              <WeeklyReport reports={filteredReports} loading={reportsLoading} />
-              <MonthlyReport reports={filteredReports} loading={reportsLoading} />
-            </div>
-            <div className="text-center mt-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
-              <span className="text-[9px] text-accent-teal/60">tap to expand</span>
-            </div>
+      {/* ─── PERIOD ANALYSIS ─── */}
+      <Section title="Period Analysis" subtitle="Weekly, monthly, and yearly summaries" onExpand={() => setExpandedSection('Period Analysis')}>
+        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3 cursor-pointer hover:shadow-md hover:border-accent-teal/15 transition-all duration-300 group/card" onClick={() => setExpandedSection('Period Analysis')}>
+          <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5 sm:gap-3">
+            <WeeklyReport reports={filteredReports} loading={reportsLoading} />
+            <MonthlyReport reports={filteredReports} loading={reportsLoading} />
           </div>
-        </Section>
+          <div className="text-center mt-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
+            <span className="text-[9px] text-accent-teal/60">tap to expand</span>
+          </div>
+        </div>
+      </Section>
 
-        <Section title="Advanced Trends" subtitle="Revenue, AOV, and product velocity over time" onExpand={() => setExpandedSection('Advanced Trends')}>
-          <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3 cursor-pointer hover:shadow-md hover:border-orange-400/15 transition-all duration-300 group/card" onClick={() => setExpandedSection('Advanced Trends')}>
-            <div className="space-y-2.5 sm:space-y-3">
-              <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
-                <OrderMixCompact reports={filteredReports} />
-                <PerformanceCompact reports={filteredReports} />
-              </div>
-              <RevenueOverviewCompact reports={filteredReports} />
+      {/* ─── ADVANCED TRENDS ─── */}
+      <Section title="Advanced Trends" subtitle="Revenue, AOV, and product velocity over time" onExpand={() => setExpandedSection('Advanced Trends')}>
+        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3 cursor-pointer hover:shadow-md hover:border-orange-400/15 transition-all duration-300 group/card" onClick={() => setExpandedSection('Advanced Trends')}>
+          <div className="space-y-2.5 sm:space-y-3">
+            <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
+              <OrderMixCompact reports={filteredReports} />
+              <PerformanceCompact reports={filteredReports} />
             </div>
-            <div className="text-center mt-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
-              <span className="text-[9px] text-orange-400/60">tap to expand</span>
-            </div>
+            <RevenueOverviewCompact reports={filteredReports} />
           </div>
-        </Section>
-      </div>
+          <div className="text-center mt-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
+            <span className="text-[9px] text-orange-400/60">tap to expand</span>
+          </div>
+        </div>
+      </Section>
 
       {/* ─── WEEKDAY & CATEGORY ─── */}
       <Section title="Weekday & Category" subtitle="Order patterns by day and product category" onExpand={() => setExpandedSection('Weekday & Category')}>
