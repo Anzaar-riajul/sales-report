@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { subDays, format } from 'date-fns';
+import { AreaChart, Area, BarChart, Bar, LineChart, Line, ComposedChart, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { useReports } from '../hooks/useReports';
 import { useProducts } from '../hooks/useProducts';
 import { computeAlerts } from '../utils/analytics';
@@ -85,6 +86,109 @@ function StockPreview({ products, reports }) {
       <div className="text-center pt-1">
         <span className="text-[9px] text-accent-rose/60">See full analysis →</span>
       </div>
+    </div>
+  );
+}
+
+function OrderMixCompact({ reports }) {
+  const data = useMemo(() => {
+    if (!reports) return [];
+    return reports.slice(-7).map(r => ({
+      date: r.dateString?.slice(5) || '',
+      Regular: r.regularOrder || 0,
+      Customize: r.customizeOrder || 0,
+    }));
+  }, [reports]);
+
+  if (data.length === 0) return <div className="h-24 flex items-center justify-center text-text-muted text-[10px]">No data</div>;
+
+  return (
+    <div className="bg-bg-elevated/30 rounded-xl p-2">
+      <p className="text-[9px] text-text-muted uppercase font-medium mb-1">Order Mix</p>
+      <ResponsiveContainer width="100%" height={80}>
+        <BarChart data={data} barGap={1}>
+          <XAxis dataKey="date" tick={{ fontSize: 7, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
+          <YAxis hide />
+          <Tooltip
+            contentStyle={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '8px', fontSize: '10px', padding: '6px 8px' }}
+            formatter={(v, n) => [v, n]}
+          />
+          <Bar dataKey="Regular" stackId="a" fill="#C9A84C" radius={[2, 2, 0, 0]} />
+          <Bar dataKey="Customize" stackId="a" fill="#E11D48" radius={[2, 2, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+function PerformanceCompact({ reports }) {
+  const data = useMemo(() => {
+    if (!reports) return [];
+    return reports.slice(-7).map(r => ({
+      date: r.dateString?.slice(5) || '',
+      AOV: r.totalOrder > 0 ? Math.round(r.totalOrderValue / r.totalOrder) : 0,
+      'Advance %': r.advanceRate || 0,
+    }));
+  }, [reports]);
+
+  if (data.length === 0) return <div className="h-24 flex items-center justify-center text-text-muted text-[10px]">No data</div>;
+
+  return (
+    <div className="bg-bg-elevated/30 rounded-xl p-2">
+      <p className="text-[9px] text-text-muted uppercase font-medium mb-1">Performance</p>
+      <ResponsiveContainer width="100%" height={80}>
+        <ComposedChart data={data}>
+          <XAxis dataKey="date" tick={{ fontSize: 7, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
+          <YAxis hide />
+          <Tooltip
+            contentStyle={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '8px', fontSize: '10px', padding: '6px 8px' }}
+            formatter={(v, n) => [n === 'AOV' ? `৳${v}` : `${v}%`, n]}
+          />
+          <Bar dataKey="AOV" fill="#3B82F6" fillOpacity={0.6} radius={[2, 2, 0, 0]} barSize={8} />
+          <Line type="monotone" dataKey="Advance %" stroke="#C9A84C" strokeWidth={1.5} dot={false} />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+function RevenueOverviewCompact({ reports }) {
+  const data = useMemo(() => {
+    if (!reports) return [];
+    return reports.slice(-14).map(r => ({
+      date: r.dateString?.slice(5) || '',
+      Revenue: r.totalOrderValue || 0,
+      Advance: r.totalAdvance || 0,
+    }));
+  }, [reports]);
+
+  if (data.length === 0) return null;
+
+  return (
+    <div className="bg-bg-elevated/30 rounded-xl p-2">
+      <p className="text-[9px] text-text-muted uppercase font-medium mb-1">Revenue Overview</p>
+      <ResponsiveContainer width="100%" height={80}>
+        <AreaChart data={data}>
+          <defs>
+            <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#C9A84C" stopOpacity={0.3} />
+              <stop offset="100%" stopColor="#C9A84C" stopOpacity={0} />
+            </linearGradient>
+            <linearGradient id="advGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#0D9488" stopOpacity={0.3} />
+              <stop offset="100%" stopColor="#0D9488" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <XAxis dataKey="date" tick={{ fontSize: 7, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
+          <YAxis hide />
+          <Tooltip
+            contentStyle={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: '8px', fontSize: '10px', padding: '6px 8px' }}
+            formatter={(v) => [`৳${v.toLocaleString()}`, '']}
+          />
+          <Area type="monotone" dataKey="Revenue" stroke="#C9A84C" fill="url(#revGrad)" strokeWidth={1.5} />
+          <Area type="monotone" dataKey="Advance" stroke="#0D9488" fill="url(#advGrad)" strokeWidth={1.5} />
+        </AreaChart>
+      </ResponsiveContainer>
     </div>
   );
 }
@@ -465,7 +569,13 @@ export default function Dashboard() {
 
         <Section title="Advanced Trends" subtitle="Revenue, AOV, and product velocity over time" onExpand={() => setExpandedSection('Advanced Trends')}>
           <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3 cursor-pointer hover:shadow-md hover:border-orange-400/15 transition-all duration-300 group/card" onClick={() => setExpandedSection('Advanced Trends')}>
-            <AdvancedTrends reports={filteredReports} />
+            <div className="space-y-2.5 sm:space-y-3">
+              <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
+                <OrderMixCompact reports={filteredReports} />
+                <PerformanceCompact reports={filteredReports} />
+              </div>
+              <RevenueOverviewCompact reports={filteredReports} />
+            </div>
             <div className="text-center mt-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
               <span className="text-[9px] text-orange-400/60">tap to expand</span>
             </div>
