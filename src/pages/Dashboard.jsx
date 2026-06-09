@@ -81,6 +81,7 @@ export default function Dashboard() {
   const { products } = useProducts();
   const [range, setRange] = useState({ type: '7d' });
   const [showCustom, setShowCustom] = useState(false);
+  const [dismissedAlerts, setDismissedAlerts] = useState(new Set());
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
 
@@ -233,21 +234,32 @@ export default function Dashboard() {
       )}
 
       {/* ─── ALERTS ─── */}
-      {alerts.length > 0 && (
-        <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1 animate-fade-in">
-          {alerts.slice(0, 4).map((alert, i) => (
-            <div key={i} className="flex-shrink-0 min-w-[160px] sm:min-w-[220px] max-w-[220px] sm:max-w-none">
-              <Alert message={alert.message} severity={alert.severity} />
-            </div>
-          ))}
-          {alerts.length > 4 && (
-            <button onClick={() => navigate('/alerts')}
-              className="flex-shrink-0 px-2 sm:px-3 py-2 text-xs text-accent-gold hover:underline bg-white rounded-xl border border-border/60 shadow-sm hover:shadow-md transition-all">
-              +{alerts.length - 4}
-            </button>
-          )}
-        </div>
-      )}
+      {(() => {
+        const visibleAlerts = [];
+        const remaining = [];
+        for (let i = 0; i < alerts.length; i++) {
+          if (dismissedAlerts.has(i)) continue;
+          if (visibleAlerts.length < 4) visibleAlerts.push({ alert: alerts[i], idx: i });
+          else remaining.push(alerts[i]);
+        }
+        if (visibleAlerts.length === 0) return null;
+        return (
+          <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1 animate-fade-in">
+            {visibleAlerts.map(({ alert, idx }) => (
+              <div key={idx} className="flex-shrink-0 min-w-[160px] sm:min-w-[220px] max-w-[220px] sm:max-w-none">
+                <Alert message={alert.message} severity={alert.severity}
+                  onDismiss={() => setDismissedAlerts(prev => new Set(prev).add(idx))} />
+              </div>
+            ))}
+            {remaining.length > 0 && (
+              <button onClick={() => navigate('/alerts')}
+                className="flex-shrink-0 px-2 sm:px-3 py-2 text-xs text-accent-gold hover:underline bg-white rounded-xl border border-border/60 shadow-sm hover:shadow-md transition-all">
+                +{remaining.length}
+              </button>
+            )}
+          </div>
+        );
+      })()}
 
       {/* ─── KPI CARDS ─── */}
       <DynamicKPIs reports={filteredReports} allReports={sortedReports} />
