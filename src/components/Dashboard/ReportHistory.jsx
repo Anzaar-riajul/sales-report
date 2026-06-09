@@ -66,7 +66,7 @@ function ReportDetailModal({ report, allReports, onClose, onEdit, onDelete }) {
   const handleDeleteConfirm = useCallback(async () => {
     setDeleting(true);
     try {
-      await onDelete(report);
+      await onDelete?.(report);
       setShowDeleteConfirm(false);
       onClose();
     } catch {
@@ -92,7 +92,7 @@ function ReportDetailModal({ report, allReports, onClose, onEdit, onDelete }) {
               </div>
             </div>
             <div className="flex items-center gap-1.5">
-              <button onClick={() => onEdit(report)}
+              <button onClick={() => onEdit?.(report)}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-[#6366F1] bg-[#6366F1]/5 hover:bg-[#6366F1]/10 border border-[#6366F1]/15 rounded-lg transition-all">
                 <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />

@@ -50,13 +50,9 @@ function BarVis({ value, max, color }) {
     </div>
   );
 }
-
 export default function RangePDF({ reports, rangeLabel, startDate, endDate }) {
-  if (!reports || reports.length === 0) return null;
-
-  const sorted = useMemo(() => [...reports].sort((a, b) => a.dateString.localeCompare(b.dateString)), [reports]);
+  const sorted = useMemo(() => reports ? [...reports].sort((a, b) => a.dateString.localeCompare(b.dateString)) : [], [reports]);
   const days = sorted.length;
-
   const agg = useMemo(() => sorted.reduce((acc, r) => ({
     totalOrder: acc.totalOrder + (r.totalOrder || 0),
     regularOrder: acc.regularOrder + (r.regularOrder || 0),
@@ -65,17 +61,14 @@ export default function RangePDF({ reports, rangeLabel, startDate, endDate }) {
     totalOrderValue: acc.totalOrderValue + (r.totalOrderValue || 0),
     totalAdvance: acc.totalAdvance + (r.totalAdvance || 0),
   }), { totalOrder: 0, regularOrder: 0, customizeOrder: 0, totalProduct: 0, totalOrderValue: 0, totalAdvance: 0 }), [sorted]);
-
   const avgOrders = days > 0 ? Math.round(agg.totalOrder / days) : 0;
   const avgValue = days > 0 ? Math.round(agg.totalOrderValue / days) : 0;
   const advanceRate = agg.totalOrderValue > 0 ? Math.round((agg.totalAdvance / agg.totalOrderValue) * 100) : 0;
   const customizeRate = agg.totalOrder > 0 ? Math.round((agg.customizeOrder / agg.totalOrder) * 100) : 0;
   const pendingAmount = Math.max(0, agg.totalOrderValue - agg.totalAdvance);
   const avgOrderValue = agg.totalOrder > 0 ? Math.round(agg.totalOrderValue / agg.totalOrder) : 0;
-
   const bestDay = useMemo(() => sorted.reduce((best, r) => (r.totalOrderValue > (best?.totalOrderValue || 0)) ? r : best, null), [sorted]);
   const worstDay = useMemo(() => sorted.reduce((worst, r) => (r.totalOrderValue < (worst?.totalOrderValue || Infinity)) ? r : worst, null), [sorted]);
-
   const topProducts = useMemo(() => {
     const map = {};
     sorted.forEach(r => (r.products || []).forEach(p => {
@@ -84,7 +77,6 @@ export default function RangePDF({ reports, rangeLabel, startDate, endDate }) {
     }));
     return Object.values(map).sort((a, b) => b.qty - a.qty).slice(0, 10);
   }, [sorted]);
-
   const deadProducts = useMemo(() => {
     const lastSeen = {};
     sorted.forEach(r => (r.products || []).forEach(p => {
@@ -98,7 +90,6 @@ export default function RangePDF({ reports, rangeLabel, startDate, endDate }) {
       .slice(0, 8)
       .map(([name, d]) => ({ name, lastSeen: d.date, category: d.category }));
   }, [sorted]);
-
   const weeklyData = useMemo(() => {
     const weeks = {};
     sorted.forEach(r => {
@@ -113,23 +104,14 @@ export default function RangePDF({ reports, rangeLabel, startDate, endDate }) {
     });
     return Object.values(weeks).sort((a, b) => a.week.localeCompare(b.week));
   }, [sorted]);
-
   const weekComp = useMemo(() => {
     if (weeklyData.length < 2) return null;
     const curr = weeklyData[weeklyData.length - 1];
     const prev = weeklyData[weeklyData.length - 2];
-    return {
-      curr, prev,
-      orderGrowth: prev.orders > 0 ? Math.round(((curr.orders - prev.orders) / prev.orders) * 100) : 0,
-      valueGrowth: prev.value > 0 ? Math.round(((curr.value - prev.value) / prev.value) * 100) : 0,
-    };
+    return { curr, prev, orderGrowth: prev.orders > 0 ? Math.round(((curr.orders - prev.orders) / prev.orders) * 100) : 0, valueGrowth: prev.value > 0 ? Math.round(((curr.value - prev.value) / prev.value) * 100) : 0, };
   }, [weeklyData]);
-
-  const dailyTrend = useMemo(() => sorted.map(r => ({
-    date: formatDateShort(r.dateString), value: r.totalOrderValue || 0,
-  })), [sorted]);
+  const dailyTrend = useMemo(() => sorted.map(r => ({ date: formatDateShort(r.dateString), value: r.totalOrderValue || 0, })), [sorted]);
   const maxTrendVal = useMemo(() => Math.max(...dailyTrend.map(d => d.value), 1), [dailyTrend]);
-
   const alerts = useMemo(() => {
     const r = [];
     if (advanceRate < 40) r.push({ icon: '⚠️', text: `Avg advance rate ${advanceRate}%. Collect 60%+ upfront.`, color: T.rose });
@@ -143,6 +125,8 @@ export default function RangePDF({ reports, rangeLabel, startDate, endDate }) {
     if (avgOrderValue > 3000) r.push({ icon: '💎', text: `High AOV ৳${avgOrderValue}.`, color: T.gold });
     return r;
   }, [advanceRate, customizeRate, deadProducts, weekComp, avgOrderValue]);
+
+  if (!reports || reports.length === 0) return null;
 
   return (
     <div

@@ -38,8 +38,6 @@ function MiniChart({ data, color }) {
 function CardModal({ open, onClose, type, data, reports }) {
   const navigate = useNavigate();
   const t = CARD_THEMES[type];
-  if (!open) return null;
-
   const trendData = useMemo(() => {
     if (!reports || type !== 'top') return [];
     return [...reports].reverse().slice(-14).map(r => ({
@@ -47,6 +45,8 @@ function CardModal({ open, onClose, type, data, reports }) {
       v: r.totalProduct || 0,
     }));
   }, [reports, type]);
+
+  if (!open) return null;
 
   return (
     <DetailModal

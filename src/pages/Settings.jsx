@@ -7,6 +7,7 @@ import DetailModal from '../components/UI/DetailModal';
 import RangePDF from '../components/Dashboard/RangePDF';
 import DataEntryTab from '../components/Settings/DataEntryTab';
 import { formatBDT, formatNumber } from '../utils/formatters';
+import { generateReportPDF } from '../utils/pdfGenerator';
 import { subDays, format } from 'date-fns';
 
 const ROLE_OPTIONS = [
@@ -69,9 +70,9 @@ function ExportTab() {
     if (filteredReports.length === 0) return;
     setExporting(true);
     try {
-      const el = document.getElementById('range-pdf-render');
-      if (el) { el.style.display = 'block'; el.dataset.render = Date.now().toString(); }
-      await new Promise(r => setTimeout(r, 500));
+      const s = filteredReports[filteredReports.length - 1]?.dateString;
+      const e = filteredReports[0]?.dateString;
+      await generateReportPDF({ dateString: `${s} → ${e}` }, 'range-pdf-content', `Anzaar-Report-${s}-to-${e}.pdf`);
     } catch (err) { console.error('Export failed:', err); }
     setExporting(false);
   };
