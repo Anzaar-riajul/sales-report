@@ -117,61 +117,81 @@ export default function Dashboard() {
   return (
     <div className="space-y-4 sm:space-y-5">
       {/* ═══ HEADER ═══ */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h2 className="font-semibold text-xl sm:text-2xl text-text-primary">Dashboard</h2>
-          <p className="text-xs text-text-muted mt-0.5">
-            {filteredReports.length} reports · {
-              range.type === 'yesterday' ? 'Yesterday' :
-              range.type === 'today' ? 'Latest' :
-              range.type === 'custom' ? `${range.start} to ${range.end}` :
-              `Last ${range.type}`
-            }
-          </p>
-        </div>
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="flex gap-1 bg-bg-elevated/50 p-0.5 rounded-lg border border-border">
-            {RANGES.map(r => (
-              <button
-                key={r.value}
-                onClick={() => { setRange({ type: r.value }); setShowCustom(false); }}
-                className={`px-2 sm:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
-                  range.type === r.value
-                    ? 'bg-white text-accent-gold border border-accent-gold/20 shadow-sm'
-                    : 'text-text-muted hover:text-text-primary'
-                }`}
-              >
-                {r.label}
-              </button>
-            ))}
-            <button
-              onClick={() => setShowCustom(!showCustom)}
-              className={`px-2 py-1.5 text-xs font-medium rounded-md transition-all ${
-                range.type === 'custom'
-                  ? 'bg-white text-accent-gold border border-accent-gold/20 shadow-sm'
-                  : 'text-text-muted hover:text-text-primary'
-              }`}
-              title="Custom range"
-            >
-              📅
-            </button>
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-bg-elevated/60 border border-border p-5 sm:p-6">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-accent-gold/[0.03] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-accent-teal/[0.03] rounded-full translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="hidden sm:flex w-10 h-10 rounded-xl bg-accent-gold/10 border border-accent-gold/20 items-center justify-center flex-shrink-0">
+              <span className="text-lg text-accent-gold font-semibold">◈</span>
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="font-semibold text-xl sm:text-2xl text-text-primary tracking-tight">Dashboard</h2>
+                <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-bg-elevated text-[10px] font-medium text-text-muted border border-border">
+                  {filteredReports.length} reports
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-text-muted mt-0.5">
+                <span className="inline-flex items-center gap-1.5">
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                  {
+                    range.type === 'yesterday' ? 'Showing yesterday\'s report' :
+                    range.type === 'today' ? 'Showing latest report' :
+                    range.type === 'custom' ? `${range.start} → ${range.end}` :
+                    `Last ${range.type} reports`
+                  }
+                </span>
+              </p>
+            </div>
           </div>
-          {showCustom && (
-            <div className="flex items-center gap-1.5 bg-white border border-border rounded-lg p-1 shadow-sm">
-              <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)}
-                className="text-xs px-2 py-1.5 border border-border rounded-md w-28 focus:outline-none focus:border-accent-gold/50" />
-              <span className="text-text-muted text-xs">–</span>
-              <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)}
-                className="text-xs px-2 py-1.5 border border-border rounded-md w-28 focus:outline-none focus:border-accent-gold/50" />
+
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex gap-0.5 bg-bg-elevated/80 p-0.5 rounded-xl border border-border shadow-sm">
+              {RANGES.map(r => (
+                <button
+                  key={r.value}
+                  onClick={() => { setRange({ type: r.value }); setShowCustom(false); }}
+                  className={`relative px-3 sm:px-4 py-2 text-xs font-medium rounded-lg transition-all whitespace-nowrap ${
+                    range.type === r.value
+                      ? 'bg-white text-accent-gold shadow-sm border border-accent-gold/20'
+                      : 'text-text-muted hover:text-text-primary hover:bg-white/50'
+                  }`}
+                >
+                  {r.label}
+                </button>
+              ))}
               <button
-                onClick={() => { if (customStart && customEnd) { setRange({ type: 'custom', start: customStart, end: customEnd }); setShowCustom(false); } }}
-                className="btn-primary text-xs py-1.5 px-2.5"
-                disabled={!customStart || !customEnd}
+                onClick={() => setShowCustom(!showCustom)}
+                className={`relative px-2.5 py-2 text-xs font-medium rounded-lg transition-all ${
+                  range.type === 'custom'
+                    ? 'bg-white text-accent-gold shadow-sm border border-accent-gold/20'
+                    : 'text-text-muted hover:text-text-primary hover:bg-white/50'
+                }`}
+                title="Custom range"
               >
-                Go
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg>
               </button>
             </div>
-          )}
+
+            {showCustom && (
+              <div className="flex items-center gap-1.5 bg-white border border-border rounded-xl p-1.5 shadow-lg">
+                <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)}
+                  className="text-xs px-2.5 py-1.5 border border-border rounded-lg w-28 focus:outline-none focus:border-accent-gold/50 focus:ring-1 focus:ring-accent-gold/20" />
+                <span className="text-text-muted text-xs font-medium">to</span>
+                <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)}
+                  className="text-xs px-2.5 py-1.5 border border-border rounded-lg w-28 focus:outline-none focus:border-accent-gold/50 focus:ring-1 focus:ring-accent-gold/20" />
+                <button
+                  onClick={() => { if (customStart && customEnd) { setRange({ type: 'custom', start: customStart, end: customEnd }); setShowCustom(false); } }}
+                  className="btn-primary text-xs py-1.5 px-3 rounded-lg"
+                  disabled={!customStart || !customEnd}
+                >
+                  Apply
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
