@@ -7,7 +7,7 @@ import ReportHistory from '../components/Dashboard/ReportHistory';
 
 function SuccessToast({ message, onDismiss }) {
   useEffect(() => {
-    const timer = setTimeout(onDismiss, 3500);
+    const timer = setTimeout(onDismiss, 3000);
     return () => clearTimeout(timer);
   }, [onDismiss]);
 
@@ -26,7 +26,7 @@ function SuccessToast({ message, onDismiss }) {
           </svg>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-text-primary">Report Saved</p>
+          <p className="text-sm font-bold text-text-primary">✓ Report Saved</p>
           <p className="text-xs text-text-muted mt-0.5 truncate">{message}</p>
         </div>
         <button onClick={onDismiss} className="text-text-muted hover:text-text-primary flex-shrink-0 ml-2 transition-colors">
@@ -96,16 +96,21 @@ export default function DailyInput() {
       const result = await addReport(parsed, existingReport?.id || null);
       setSuccessMsg(
         result.isUpdate
-          ? `${parsed.dateString} updated successfully`
-          : `${parsed.dateString} saved successfully`
+          ? `${parsed.dateString} updated successfully! ✨`
+          : `${parsed.dateString} saved successfully! ✨`
       );
-      setExistingReport(null);
-      setCurrentParsed(null);
-      setStep(0);
-      clearTrigger.current = Date.now();
+      
+      // Reset everything immediately for super fast entry
+      setTimeout(() => {
+        setExistingReport(null);
+        setCurrentParsed(null);
+        setStep(0);
+        clearTrigger.current = Date.now();
+      }, 100); // Instant reset
     } catch (err) {
       console.error('Save failed:', err);
       setStep(1);
+      setSuccessMsg(null);
     } finally {
       setSaving(false);
     }
@@ -135,7 +140,7 @@ export default function DailyInput() {
     <div className="space-y-5 max-w-4xl animate-fade-in">
       <AnimatePresence>
         {successMsg && (
-          <SuccessToast message={successMsg} onDismiss={() => setSuccessMsg(null)} />
+          <SuccessToast key="success-toast" message={successMsg} onDismiss={() => setSuccessMsg(null)} />
         )}
       </AnimatePresence>
 
