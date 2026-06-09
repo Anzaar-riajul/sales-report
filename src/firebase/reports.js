@@ -1,9 +1,13 @@
-import { collection, query, orderBy, getDocs, doc, getDoc, updateDoc, Timestamp, writeBatch, where } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, doc, getDoc, updateDoc, setDoc, Timestamp, writeBatch, where, arrayUnion, increment } from 'firebase/firestore';
 import { db } from './config';
 import { categorizeProduct } from '../utils/categorize';
 
 const REPORTS_COLLECTION = 'reports';
 const PRODUCTS_COLLECTION = 'products';
+const CATEGORY_MAP_COLLECTION = 'config';
+const CATEGORY_MAP_DOC = 'productCategoryMap';
+
+let cachedCategoryMappings = null;
 
 export async function getReports() {
   const q = query(collection(db, REPORTS_COLLECTION), orderBy('dateString', 'desc'));
@@ -20,13 +24,14 @@ export async function getReportByDate(dateString) {
 }
 
 export async function saveReport(parsedData, existingId = null) {
-  // Fetch saved category mappings for auto-assign
-  const categoryMappings = await getCategoryMappings();
+  if (!cachedCategoryMappings) {
+    cachedCategoryMappings = await getCategoryMappings();
+  }
 
   const products = parsedData.products.map(p => ({
     name: p.name,
     quantity: p.quantity || 0,
-    category: categoryMappings[p.name] || categorizeProduct(p.name),
+    category: cachedCategoryMappings[p.name] || categorizeProduct(p.name),
   }));
 
   const reportData = {
@@ -50,53 +55,26 @@ export async function saveReport(parsedData, existingId = null) {
   };
 
   const batch = writeBatch(db);
-
   const reportRef = existingId
     ? doc(db, REPORTS_COLLECTION, existingId)
     : doc(collection(db, REPORTS_COLLECTION));
 
   batch.set(reportRef, reportData, { merge: !!existingId });
 
-  const productRefs = products.map(p => doc(db, PRODUCTS_COLLECTION, p.name));
-  const productSnaps = await Promise.all(productRefs.map(ref => getDoc(ref)));
+  const dateTimestamp = Timestamp.fromDate(new Date(parsedData.dateString + 'T00:00:00'));
 
-  const dateString = parsedData.dateString;
-  for (let i = 0; i < products.length; i++) {
-    const product = products[i];
-    const snap = productSnaps[i];
-    const ref = productRefs[i];
-
-    if (snap.exists()) {
-      const data = snap.data();
-      const dailyHistory = (data.dailyHistory || []).map(e => ({ ...e }));
-      const existingEntry = dailyHistory.find(h => h.date === dateString);
-
-      if (existingEntry) {
-        existingEntry.quantity += product.quantity;
-      } else {
-        dailyHistory.push({ date: dateString, quantity: product.quantity });
-      }
-
-      batch.set(ref, {
-        name: product.name,
-        category: product.category,
-        totalQuantitySold: (data.totalQuantitySold || 0) + product.quantity,
-        totalAppearances: existingEntry ? (data.totalAppearances || 1) : (data.totalAppearances || 0) + 1,
-        lastSeenDate: Timestamp.fromDate(new Date(dateString + 'T00:00:00')),
-        firstSeenDate: data.firstSeenDate || Timestamp.fromDate(new Date(dateString + 'T00:00:00')),
-        dailyHistory,
-      });
-    } else {
-      batch.set(ref, {
-        name: product.name,
-        category: product.category,
-        totalQuantitySold: product.quantity,
-        totalAppearances: 1,
-        lastSeenDate: Timestamp.fromDate(new Date(dateString + 'T00:00:00')),
-        firstSeenDate: Timestamp.fromDate(new Date(dateString + 'T00:00:00')),
-        dailyHistory: [{ date: dateString, quantity: product.quantity }],
-      });
-    }
+  for (const product of products) {
+    const productRef = doc(db, PRODUCTS_COLLECTION, product.name);
+    // merge:true so firstSeenDate is only written on creation (won't overwrite existing)
+    batch.set(productRef, {
+      name: product.name,
+      category: product.category,
+      totalQuantitySold: increment(product.quantity),  // ⚡ atomic, no read needed
+      totalAppearances: increment(1),                  // ⚡ atomic, no read needed
+      lastSeenDate: dateTimestamp,
+      firstSeenDate: dateTimestamp,
+      dailyHistory: arrayUnion({ date: parsedData.dateString, quantity: product.quantity }),
+    }, { merge: true });
   }
 
   await batch.commit();
@@ -116,23 +94,24 @@ export async function getReportCount() {
 export async function updateProductCategory(productName, newCategory) {
   const ref = doc(db, PRODUCTS_COLLECTION, productName);
   await updateDoc(ref, { category: newCategory });
-  // Also save to category mappings for future auto-assign
+  if (cachedCategoryMappings) {
+    cachedCategoryMappings[productName] = newCategory;
+  }
   await saveCategoryMapping(productName, newCategory);
 }
-
-const CATEGORY_MAP_COLLECTION = 'config';
-const CATEGORY_MAP_DOC = 'productCategoryMap';
 
 export async function saveCategoryMapping(productName, category) {
   const ref = doc(db, CATEGORY_MAP_COLLECTION, CATEGORY_MAP_DOC);
   const snap = await getDoc(ref);
   const existing = snap.exists() ? (snap.data().mappings || {}) : {};
   existing[productName] = category;
-  await updateDoc(ref, { mappings: existing });
+  await setDoc(ref, { mappings: existing }, { merge: true });
 }
 
 export async function getCategoryMappings() {
   const ref = doc(db, CATEGORY_MAP_COLLECTION, CATEGORY_MAP_DOC);
   const snap = await getDoc(ref);
-  return snap.exists() ? (snap.data().mappings || {}) : {};
+  const mappings = snap.exists() ? (snap.data().mappings || {}) : {};
+  cachedCategoryMappings = mappings;
+  return mappings;
 }
