@@ -63,7 +63,7 @@ export default function Sidebar({ user }) {
         </div>
       </aside>
 
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-bg-card border-t border-border z-40 flex justify-around py-2 px-1 shadow-[0_-2px_8px_rgba(0,0,0,0.04)]">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-bg-card border-t border-border z-50 flex justify-around py-2 px-1 pb-[env(safe-area-inset-bottom,8px)] shadow-[0_-2px_8px_rgba(0,0,0,0.04)]">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
