@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useReports } from '../hooks/useReports';
+import { useAuth } from '../hooks/useAuth';
 import ReportPasteBox from '../components/Input/ReportPasteBox';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReportHistory from '../components/Dashboard/ReportHistory';
@@ -39,6 +40,7 @@ function SuccessToast({ message, onDismiss }) {
 
 export default function DailyInput() {
   const { addReport, getReportByDateString, reports, loading } = useReports();
+  const { isAdmin } = useAuth();
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState(null);
   const [existingReport, setExistingReport] = useState(null);
@@ -73,6 +75,20 @@ export default function DailyInput() {
       setSaving(false);
     }
   }, [addReport, existingReport]);
+
+  if (!isAdmin) {
+    return (
+      <div className="flex items-center justify-center min-h-[40vh] animate-fade-in">
+        <div className="glass-card p-8 text-center max-w-sm">
+          <div className="w-12 h-12 rounded-xl bg-accent-rose/10 border border-accent-rose/20 flex items-center justify-center mx-auto mb-3">
+            <span className="text-lg text-accent-rose">!</span>
+          </div>
+          <h3 className="font-semibold text-text-primary mb-1">View Only</h3>
+          <p className="text-xs text-text-muted">You don't have permission to input or edit reports.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-4xl">
