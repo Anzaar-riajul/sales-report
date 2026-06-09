@@ -111,7 +111,7 @@ function KpiModal({ open, onClose, metric, reports }) {
   }, [reports, range, customStart, customEnd]);
 
   const trendData = useMemo(() => {
-    if (!filteredReports) return [];
+    if (!filteredReports || !metric) return [];
     return [...filteredReports].reverse().map(r => {
       let val = 0;
       if (metric.key === 'orders') val = r.totalOrder || 0;
@@ -122,10 +122,10 @@ function KpiModal({ open, onClose, metric, reports }) {
       else if (metric.key === 'products') val = r.totalProduct || 0;
       return { date: formatDateShort(r.dateString), value: val };
     });
-  }, [filteredReports, metric.key]);
+  }, [filteredReports, metric?.key]);
 
   const breakdown = useMemo(() => {
-    if (!filteredReports || filteredReports.length === 0) return [];
+    if (!filteredReports || filteredReports.length === 0 || !metric) return [];
     const items = [];
     if (metric.key === 'orders') {
       items.push({ label: 'Regular Orders', value: filteredReports.reduce((s, r) => s + (r.regularOrder || 0), 0) });
@@ -162,7 +162,7 @@ function KpiModal({ open, onClose, metric, reports }) {
       items.push({ label: 'Total Revenue', value: formatBDT(totalVal) });
     }
     return items;
-  }, [filteredReports, metric.key]);
+  }, [filteredReports, metric?.key]);
 
   if (!metric || !open) return null;
 
