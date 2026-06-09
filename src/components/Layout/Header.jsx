@@ -2,32 +2,22 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { formatBDTShort } from '../../utils/formatters';
-
-const NOTIF_STORAGE_KEY = 'anzaar_last_seen_notifications';
+import { getUnreadCount } from '../../utils/notifications';
 
 export default function Header({ latestReport, user, role }) {
   const navigate = useNavigate();
-  const [hasUnseen, setHasUnseen] = useState(false);
-  const [notifCount, setNotifCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
-    const checkNotifications = () => {
-      try {
-        const lastSeen = localStorage.getItem(NOTIF_STORAGE_KEY);
-        const count = parseInt(localStorage.getItem('anzaar_notif_count') || '0');
-        setNotifCount(count);
-        setHasUnseen(count > 0 && (!lastSeen || Date.now() - parseInt(lastSeen) > 3600000));
-      } catch {}
+    const check = () => setUnreadCount(getUnreadCount());
+    check();
+    const interval = setInterval(check, 10000);
+    window.addEventListener('notification-updated', check);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('notification-updated', check);
     };
-    checkNotifications();
-    const interval = setInterval(checkNotifications, 30000);
-    return () => clearInterval(interval);
   }, []);
-
-  const markSeen = () => {
-    localStorage.setItem(NOTIF_STORAGE_KEY, Date.now().toString());
-    setHasUnseen(false);
-  };
 
   return (
     <header className="flex items-center justify-between px-4 sm:px-6 py-4 sm:py-6 border-b border-border bg-white sticky top-0 z-30 shadow-sm">
@@ -63,16 +53,16 @@ export default function Header({ latestReport, user, role }) {
 
         {/* Notification Bell */}
         <button
-          onClick={() => { markSeen(); navigate('/notifications'); }}
-          className="relative w-10 h-10 rounded-xl bg-bg-elevated/60 border border-border/30 flex items-center justify-center hover:bg-bg-elevated hover:border-accent-gold/20 hover:shadow-md transition-all duration-300 group"
+          onClick={() => navigate('/notifications')}
+          className="relative w-9 h-9 rounded-full bg-bg-elevated/60 border border-border/30 flex items-center justify-center hover:bg-bg-elevated hover:border-accent-gold/20 hover:shadow-md transition-all duration-300 group flex-shrink-0"
         >
-          <svg className="w-5 h-5 text-text-muted group-hover:text-accent-gold transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg className="w-4.5 h-4.5 text-text-muted group-hover:text-accent-gold transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
             <path d="M13.73 21a2 2 0 01-3.46 0" />
           </svg>
-          {hasUnseen && notifCount > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-gradient-to-r from-accent-rose to-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center shadow-lg shadow-accent-rose/30 animate-pulse">
-              {notifCount > 9 ? '9+' : notifCount}
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 bg-gradient-to-r from-accent-rose to-rose-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center shadow-lg shadow-accent-rose/30 animate-pulse">
+              {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
         </button>

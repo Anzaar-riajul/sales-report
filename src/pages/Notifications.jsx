@@ -4,8 +4,10 @@ import { useReports } from '../hooks/useReports';
 import { useProducts } from '../hooks/useProducts';
 import { formatBDT, formatBDTShort, formatDateShort } from '../utils/formatters';
 import { format, subDays, isAfter } from 'date-fns';
-
-const NOTIF_STORAGE_KEY = 'anzaar_last_seen_notifications';
+import {
+  getNotifications, getSeenIds, markSeen as storeMarkSeen,
+  markAllSeen, generateAndStoreNotifications
+} from '../utils/notifications';
 
 const SEVERITY = {
   critical: { icon: '🔴', color: '#E11D48', bg: 'from-rose-50 to-red-50', border: 'border-rose-200', label: 'Critical' },
@@ -178,25 +180,25 @@ export default function Notifications() {
   const { reports } = useReports();
   const { products } = useProducts();
   const [filter, setFilter] = useState('all');
-  const [seenIds, setSeenIds] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('anzaar_seen_notifs') || '[]');
-    } catch { return []; }
-  });
-
-  const notifications = useMemo(() => generateNotifications(reports, products), [reports, products]);
+  const [seenIds, setSeenIds] = useState(() => getSeenIds());
+  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem('anzaar_seen_notifs', JSON.stringify(seenIds));
-    localStorage.setItem('anzaar_last_seen_notifications', Date.now().toString());
-    localStorage.setItem('anzaar_notif_count', notifications.filter(n => !seenIds.includes(n.id)).length.toString());
-  }, [seenIds, notifications]);
+    const stored = generateAndStoreNotifications(reports, products);
+    setNotifications(stored);
+  }, [reports, products]);
+
+  useEffect(() => {
+    window.dispatchEvent(new Event('notification-updated'));
+  }, [seenIds]);
 
   const markAllRead = () => {
+    markAllSeen();
     setSeenIds(notifications.map(n => n.id));
   };
 
   const markSeen = (id) => {
+    storeMarkSeen(id);
     if (!seenIds.includes(id)) {
       setSeenIds(prev => [...prev, id]);
     }
