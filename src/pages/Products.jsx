@@ -5,6 +5,7 @@ import { useProducts } from '../hooks/useProducts';
 import { computeNewProducts, computeProductRankings, computeCategoryBreakdown } from '../utils/analytics';
 import CategoryBreakdown from '../components/Products/CategoryBreakdown';
 import DeadStockAlert from '../components/Products/DeadStockAlert';
+import { getProductLastSeen } from '../utils/analytics';
 import OthersCategoryPanel from '../components/Products/OthersCategoryPanel';
 import Card from '../components/UI/Card';
 import Badge from '../components/UI/Badge';
@@ -94,10 +95,11 @@ export default function Products() {
     const sorted = [...reports].sort((a, b) => new Date(b.dateString) - new Date(a.dateString));
     const latest = sorted[0];
     if (!latest) return [];
-    const cutoff = subDays(new Date(latest.dateString), 7);
+    const [y, m, d] = latest.dateString.split('-').map(Number);
+    const cutoff = subDays(new Date(y, m - 1, d), 7);
     return products.filter(p => {
-      if (!p.lastSeenDate) return true;
-      const lastSeen = p.lastSeenDate.toDate ? p.lastSeenDate.toDate() : new Date(p.lastSeenDate);
+      const lastSeen = getProductLastSeen(p);
+      if (!lastSeen) return true;
       return lastSeen < cutoff;
     });
   }, [products, reports]);
