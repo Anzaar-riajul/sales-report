@@ -116,82 +116,56 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-4 sm:space-y-5">
-      {/* ═══ HEADER ═══ */}
-      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-white to-bg-elevated/60 border border-border px-4 py-3 sm:px-5 sm:py-3.5">
-        <div className="absolute top-0 right-0 w-48 h-48 bg-accent-gold/[0.03] rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-36 h-36 bg-accent-teal/[0.03] rounded-full translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+      {/* ═══ FILTER BAR — merges with layout header ═══ */}
+      <div className="-mt-4 sm:-mt-6 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2 bg-white/90 backdrop-blur-sm border-b border-border flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-xs font-semibold text-text-primary whitespace-nowrap">Dashboard</span>
+          <span className="hidden sm:inline-flex text-[9px] text-text-muted bg-bg-elevated px-1.5 py-0.5 rounded-full border border-border whitespace-nowrap">
+            {filteredReports.length} reports
+          </span>
+          <span className="text-[10px] text-text-muted hidden sm:inline truncate">
+            {range.type === 'yesterday' ? 'Yesterday' :
+             range.type === 'today' ? 'Latest' :
+             range.type === 'custom' ? `${range.start} → ${range.end}` :
+             `Last ${range.type}`}
+          </span>
+        </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 relative">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="hidden sm:flex w-7 h-7 rounded-lg bg-accent-gold/10 border border-accent-gold/20 items-center justify-center flex-shrink-0">
-              <span className="text-xs text-accent-gold font-semibold">◈</span>
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <h2 className="font-semibold text-sm sm:text-base text-text-primary tracking-tight">Dashboard</h2>
-                <span className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-bg-elevated text-[9px] font-medium text-text-muted border border-border">
-                  {filteredReports.length} reports
-                </span>
-              </div>
-              <p className="text-[10px] sm:text-xs text-text-muted mt-px">
-                <span className="inline-flex items-center gap-1">
-                  <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                  {
-                    range.type === 'yesterday' ? 'Yesterday\'s report' :
-                    range.type === 'today' ? 'Latest report' :
-                    range.type === 'custom' ? `${range.start} → ${range.end}` :
-                    `Last ${range.type} reports`
-                  }
-                </span>
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            <div className="flex gap-0.5 bg-bg-elevated/80 p-0.5 rounded-lg border border-border shadow-sm">
-              {RANGES.map(r => (
-                <button
-                  key={r.value}
-                  onClick={() => { setRange({ type: r.value }); setShowCustom(false); }}
-                  className={`relative px-2 sm:px-3 py-1.5 text-[11px] font-medium rounded-md transition-all whitespace-nowrap ${
-                    range.type === r.value
-                      ? 'bg-white text-accent-gold shadow-sm border border-accent-gold/20'
-                      : 'text-text-muted hover:text-text-primary hover:bg-white/50'
-                  }`}
-                >
-                  {r.label}
-                </button>
-              ))}
-              <button
-                onClick={() => setShowCustom(!showCustom)}
-                className={`relative px-2 py-1.5 text-[11px] font-medium rounded-md transition-all ${
-                  range.type === 'custom'
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <div className="flex gap-0.5 bg-bg-elevated/80 p-0.5 rounded-lg border border-border shadow-sm">
+            {RANGES.map(r => (
+              <button key={r.value} onClick={() => { setRange({ type: r.value }); setShowCustom(false); }}
+                className={`px-2 py-1 sm:px-2.5 sm:py-1.5 text-[10px] sm:text-[11px] font-medium rounded-md transition-all whitespace-nowrap ${
+                  range.type === r.value
                     ? 'bg-white text-accent-gold shadow-sm border border-accent-gold/20'
                     : 'text-text-muted hover:text-text-primary hover:bg-white/50'
-                }`}
-                title="Custom range"
-              >
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg>
+                }`}>
+                {r.label}
+              </button>
+            ))}
+            <button onClick={() => setShowCustom(!showCustom)}
+              className={`px-1.5 py-1 sm:px-2 sm:py-1.5 text-[10px] sm:text-[11px] font-medium rounded-md transition-all ${
+                range.type === 'custom'
+                  ? 'bg-white text-accent-gold shadow-sm border border-accent-gold/20'
+                  : 'text-text-muted hover:text-text-primary hover:bg-white/50'
+              }`} title="Custom range">
+              <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg>
+            </button>
+          </div>
+
+          {showCustom && (
+            <div className="flex items-center gap-1 absolute top-full right-4 sm:right-6 mt-1 bg-white border border-border rounded-lg p-1.5 shadow-lg z-40">
+              <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)}
+                className="text-[10px] sm:text-[11px] px-1.5 py-1 border border-border rounded-md w-22 sm:w-24 focus:outline-none focus:border-accent-gold/50 ring-0" />
+              <span className="text-text-muted text-[10px] font-medium">to</span>
+              <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)}
+                className="text-[10px] sm:text-[11px] px-1.5 py-1 border border-border rounded-md w-22 sm:w-24 focus:outline-none focus:border-accent-gold/50 ring-0" />
+              <button onClick={() => { if (customStart && customEnd) { setRange({ type: 'custom', start: customStart, end: customEnd }); setShowCustom(false); } }}
+                className="btn-primary text-[10px] sm:text-[11px] py-1 px-2 rounded-md" disabled={!customStart || !customEnd}>
+                Apply
               </button>
             </div>
-
-            {showCustom && (
-              <div className="flex items-center gap-1.5 bg-white border border-border rounded-lg p-1 shadow-lg">
-                <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)}
-                  className="text-[11px] px-2 py-1.5 border border-border rounded-md w-24 focus:outline-none focus:border-accent-gold/50 focus:ring-1 focus:ring-accent-gold/20" />
-                <span className="text-text-muted text-[11px] font-medium">to</span>
-                <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)}
-                  className="text-[11px] px-2 py-1.5 border border-border rounded-md w-24 focus:outline-none focus:border-accent-gold/50 focus:ring-1 focus:ring-accent-gold/20" />
-                <button
-                  onClick={() => { if (customStart && customEnd) { setRange({ type: 'custom', start: customStart, end: customEnd }); setShowCustom(false); } }}
-                  className="btn-primary text-[11px] py-1.5 px-2.5 rounded-md"
-                  disabled={!customStart || !customEnd}
-                >
-                  Apply
-                </button>
-              </div>
-            )}
-          </div>
+          )}
         </div>
       </div>
 
