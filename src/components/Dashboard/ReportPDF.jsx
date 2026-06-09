@@ -189,7 +189,7 @@ export default function ReportPDF({ report, allReports }) {
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: '11px', fontWeight: 800, fontFamily: 'monospace', flexShrink: 0,
                     }}>{i + 1}</span>
-                    <span style={{ fontSize: '14px', color: T.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
+                    <span style={{ fontSize: '14px', color: T.text, lineHeight: '1.4' }}>{p.name}</span>
                   </div>
                   <span style={{ fontSize: '16px', fontWeight: 800, color: T.gold, fontFamily: 'monospace', flexShrink: 0, marginLeft: '8px' }}>×{p.quantity}</span>
                 </div>
