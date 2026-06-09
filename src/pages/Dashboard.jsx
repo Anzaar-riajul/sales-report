@@ -4,7 +4,6 @@ import { subDays, format } from 'date-fns';
 import { AreaChart, Area, BarChart, Bar, LineChart, Line, ComposedChart, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { useReports } from '../hooks/useReports';
 import { useProducts } from '../hooks/useProducts';
-import { computeAlerts } from '../utils/analytics';
 import { formatBDTShort } from '../utils/formatters';
 import DynamicKPIs from '../components/Dashboard/DynamicKPIs';
 import RevenueChart from '../components/Dashboard/RevenueChart';
@@ -197,7 +196,6 @@ import ProductsOverview from '../components/Dashboard/ProductsOverview';
 import DailyReport from '../components/Reports/DailyReport';
 import WeeklyReport from '../components/Reports/WeeklyReport';
 import MonthlyReport from '../components/Reports/MonthlyReport';
-import Alert from '../components/UI/Alert';
 import DetailModal from '../components/UI/DetailModal';
 import { CardSkeleton, ChartSkeleton } from '../components/UI/Loader';
 
@@ -287,7 +285,6 @@ export default function Dashboard() {
   const { products } = useProducts();
   const [range, setRange] = useState({ type: '7d' });
   const [showCustom, setShowCustom] = useState(false);
-  const [dismissedAlerts, setDismissedAlerts] = useState(new Set());
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
   const [expandedSection, setExpandedSection] = useState(null);
@@ -313,20 +310,6 @@ export default function Dashboard() {
   }, [sortedReports, range]);
 
   const latestReport = sortedReports.length > 0 ? sortedReports[0] : null;
-  const previousReport = sortedReports.length > 1 ? sortedReports[1] : null;
-
-  const alerts = useMemo(() => computeAlerts(sortedReports, products), [sortedReports, products]);
-
-  const ragStatus = useMemo(() => {
-    if (!latestReport || !previousReport) return null;
-    const valChange = latestReport.totalOrderValue - previousReport.totalOrderValue;
-    const ordChange = latestReport.totalOrder - previousReport.totalOrder;
-    return {
-      trend: valChange > 0 ? 'up' : valChange < 0 ? 'down' : 'flat',
-      valChange,
-      ordChange,
-    };
-  }, [latestReport, previousReport]);
 
   const rangeLabel = useMemo(() => {
     if (range.type === 'today') return 'Today';
@@ -439,56 +422,6 @@ export default function Dashboard() {
           )}
         </div>
       </div>
-
-      {/* ─── RAG STATUS BAR ─── */}
-      {ragStatus && (
-        <div className={`px-3 py-2 rounded-xl border text-xs font-medium flex items-center gap-2 animate-fade-in ${
-          ragStatus.trend === 'up'
-            ? 'bg-accent-teal/5 border-accent-teal/15 text-accent-teal'
-            : ragStatus.trend === 'down'
-            ? 'bg-accent-rose/5 border-accent-rose/15 text-accent-rose'
-            : 'bg-text-muted/5 border-text-muted/15 text-text-muted'
-        }`}>
-          <span className="text-sm">
-            {ragStatus.trend === 'up' ? '▲' : ragStatus.trend === 'down' ? '▼' : '–'}
-          </span>
-          <span>
-            {ragStatus.trend === 'up'
-              ? `Value up ${formatBDTShort(ragStatus.valChange)} vs previous`
-              : ragStatus.trend === 'down'
-              ? `Value down ${formatBDTShort(Math.abs(ragStatus.valChange))} vs previous`
-              : 'Value unchanged vs previous'}
-          </span>
-        </div>
-      )}
-
-      {/* ─── ALERTS ─── */}
-      {(() => {
-        const visibleAlerts = [];
-        const remaining = [];
-        for (let i = 0; i < alerts.length; i++) {
-          if (dismissedAlerts.has(i)) continue;
-          if (visibleAlerts.length < 4) visibleAlerts.push({ alert: alerts[i], idx: i });
-          else remaining.push(alerts[i]);
-        }
-        if (visibleAlerts.length === 0) return null;
-        return (
-          <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-none -mx-0.5 px-0.5 animate-fade-in">
-            {visibleAlerts.map(({ alert, idx }) => (
-              <div key={idx} className="flex-shrink-0 min-w-[160px] sm:min-w-[220px] max-w-[220px] sm:max-w-none">
-                <Alert message={alert.message} severity={alert.severity}
-                  onDismiss={() => setDismissedAlerts(prev => new Set(prev).add(idx))} />
-              </div>
-            ))}
-            {remaining.length > 0 && (
-              <button onClick={() => navigate('/alerts')}
-                className="flex-shrink-0 px-2 sm:px-3 py-2 text-xs text-accent-gold hover:underline bg-white rounded-xl border border-border/60 shadow-sm hover:shadow-md transition-all">
-                +{remaining.length}
-              </button>
-            )}
-          </div>
-        );
-      })()}
 
       {/* ─── KPI CARDS ─── */}
       <DynamicKPIs reports={filteredReports} allReports={sortedReports} />

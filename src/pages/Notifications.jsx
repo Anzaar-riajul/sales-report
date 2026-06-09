@@ -25,6 +25,24 @@ function generateNotifications(reports, products) {
   const revChange = previous.totalOrderValue > 0
     ? ((latest.totalOrderValue - previous.totalOrderValue) / previous.totalOrderValue) * 100 : 0;
 
+  const valChange = latest.totalOrderValue - previous.totalOrderValue;
+
+  if (valChange > 0) {
+    notifs.push({
+      id: 'rag_value_up', type: 'success', icon: '▲',
+      title: `Value up ${formatBDTShort(valChange)} vs previous`,
+      desc: `Today: ${formatBDT(latest.totalOrderValue)} vs yesterday: ${formatBDT(previous.totalOrderValue)}`,
+      time: latest.dateString, metric: formatBDTShort(valChange),
+    });
+  } else if (valChange < 0) {
+    notifs.push({
+      id: 'rag_value_down', type: 'critical', icon: '▼',
+      title: `Value down ${formatBDTShort(Math.abs(valChange))} vs previous`,
+      desc: `Today: ${formatBDT(latest.totalOrderValue)} vs yesterday: ${formatBDT(previous.totalOrderValue)}`,
+      time: latest.dateString, metric: formatBDTShort(Math.abs(valChange)),
+    });
+  }
+
   if (revChange < -30) {
     notifs.push({
       id: 'rev_drop', type: 'critical', icon: '📉',
