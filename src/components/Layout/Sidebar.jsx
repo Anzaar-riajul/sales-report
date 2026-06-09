@@ -63,20 +63,31 @@ export default function Sidebar({ user }) {
         </div>
       </aside>
 
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-bg-card border-t border-border z-50 flex justify-around py-2 px-1 pb-[env(safe-area-inset-bottom,8px)] shadow-[0_-2px_8px_rgba(0,0,0,0.04)]">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-around items-start px-2 pt-2 pb-[env(safe-area-inset-bottom,8px)] bg-white/80 backdrop-blur-xl border-t border-border/50 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
             end={item.path === '/'}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-xs transition-all duration-200 ${
-                isActive ? 'text-accent-gold' : 'text-text-muted'
+              `relative flex flex-col items-center gap-1 px-2.5 py-1.5 min-w-0 transition-all duration-200 active:scale-95 ${
+                isActive ? 'text-accent-gold' : 'text-text-muted hover:text-text-primary'
               }`
             }
           >
-            <span className="text-lg">{item.icon}</span>
-            {item.label}
+            {({ isActive }) => (
+              <>
+                {isActive && (
+                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 w-6 h-1 rounded-full bg-accent-gold shadow-sm shadow-accent-gold/30" />
+                )}
+                <span className={`text-lg sm:text-xl leading-none transition-transform duration-200 ${isActive ? 'scale-110' : ''}`}>
+                  {item.icon}
+                </span>
+                <span className={`text-[9px] sm:text-[10px] font-medium leading-tight ${isActive ? 'font-semibold' : ''}`}>
+                  {item.label}
+                </span>
+              </>
+            )}
           </NavLink>
         ))}
       </nav>
