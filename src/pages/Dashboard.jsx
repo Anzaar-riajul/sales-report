@@ -367,7 +367,7 @@ export default function Dashboard() {
     <div className="space-y-3 sm:space-y-4 animate-fade-in">
 
       {/* ─── FILTER BAR — merged with layout header ─── */}
-      <div className="-mt-4 sm:-mt-6 -mx-2 sm:-mx-3 px-2 sm:px-3 py-2.5 bg-white/95 backdrop-blur-sm border-b border-border/80 flex items-center justify-between gap-2">
+      <div className="-mt-4 sm:-mt-6 -mx-2 sm:-mx-3 px-2 sm:px-3 py-2.5 bg-white/95 backdrop-blur-sm border-b border-border/80 flex items-center justify-between gap-2 relative z-50">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="flex items-center gap-2">
             <div className="hidden sm:flex w-6 h-6 rounded-lg bg-gradient-to-br from-accent-gold/15 to-accent-gold/5 border border-accent-gold/20 items-center justify-center flex-shrink-0">
@@ -408,15 +408,25 @@ export default function Dashboard() {
             </button>
           </div>
           {showCustom && (
-            <div className="flex items-center gap-1 absolute top-full right-2 sm:right-3 mt-1.5 bg-white border border-border rounded-xl p-1.5 shadow-lg z-40 animate-scale-in">
-              <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)}
-                className="text-[10px] sm:text-[11px] px-1.5 py-1 border border-border/60 rounded-md w-22 sm:w-24 focus:outline-none focus:border-accent-gold/50 ring-0" />
-              <span className="text-text-muted text-[10px] font-medium">to</span>
-              <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)}
-                className="text-[10px] sm:text-[11px] px-1.5 py-1 border border-border/60 rounded-md w-22 sm:w-24 focus:outline-none focus:border-accent-gold/50 ring-0" />
+            <div className="absolute top-full right-2 sm:right-3 mt-2 bg-white border border-border/60 rounded-2xl p-3 shadow-2xl z-[60] animate-scale-in min-w-[280px] sm:min-w-[320px]">
+              <div className="text-[9px] font-semibold text-text-muted uppercase tracking-wider mb-2">Select Date Range</div>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <label className="text-[8px] text-text-muted block mb-0.5">From</label>
+                  <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)}
+                    className="w-full text-[11px] px-2 py-1.5 border border-border/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-gold/30 focus:border-accent-gold/50 bg-white" />
+                </div>
+                <span className="text-text-muted text-[10px] mt-4">→</span>
+                <div className="flex-1">
+                  <label className="text-[8px] text-text-muted block mb-0.5">To</label>
+                  <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)}
+                    className="w-full text-[11px] px-2 py-1.5 border border-border/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-gold/30 focus:border-accent-gold/50 bg-white" />
+                </div>
+              </div>
               <button onClick={() => { if (customStart && customEnd) { setRange({ type: 'custom', start: customStart, end: customEnd }); setShowCustom(false); } }}
-                className="btn-primary text-[10px] sm:text-[11px] py-1 px-2 rounded-md" disabled={!customStart || !customEnd}>
-                Apply
+                className="w-full mt-2.5 py-2 bg-gradient-to-r from-accent-gold to-amber-500 text-white text-[11px] font-bold rounded-xl shadow-lg shadow-accent-gold/20 hover:shadow-xl transition-all disabled:opacity-40"
+                disabled={!customStart || !customEnd}>
+                Apply Range
               </button>
             </div>
           )}

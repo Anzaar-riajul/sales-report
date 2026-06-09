@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useReports } from '../hooks/useReports';
@@ -23,6 +23,14 @@ const QUICK_RANGES = [
   { label: 'Last 30d', key: '30d', getRange: () => ({ start: format(subDays(new Date(), 29), 'yyyy-MM-dd'), end: format(new Date(), 'yyyy-MM-dd') }) },
   { label: 'Last 90d', key: '90d', getRange: () => ({ start: format(subDays(new Date(), 89), 'yyyy-MM-dd'), end: format(new Date(), 'yyyy-MM-dd') }) },
   { label: 'All Time', key: 'all', getRange: () => null },
+];
+
+const TABS = [
+  { key: 'users', icon: '👥', label: 'Users' },
+  { key: 'requests', icon: '📩', label: 'Requests' },
+  { key: 'add', icon: '➕', label: 'Add' },
+  { key: 'entry', icon: '📝', label: 'Entry' },
+  { key: 'export', icon: '📥', label: 'Export' },
 ];
 
 function ExportTab() {
@@ -51,8 +59,7 @@ function ExportTab() {
     const totalAdvance = sorted.reduce((s, r) => s + (r.totalAdvance || 0), 0);
     return {
       count: sorted.length,
-      totalRevenue,
-      totalAdvance,
+      totalRevenue, totalAdvance,
       startDate: sorted[sorted.length - 1]?.dateString,
       endDate: sorted[0]?.dateString,
     };
@@ -63,50 +70,36 @@ function ExportTab() {
     setExporting(true);
     try {
       const el = document.getElementById('range-pdf-render');
-      if (el) {
-        el.style.display = 'block';
-        el.dataset.render = Date.now().toString();
-      }
+      if (el) { el.style.display = 'block'; el.dataset.render = Date.now().toString(); }
       await new Promise(r => setTimeout(r, 500));
-    } catch (err) {
-      console.error('Export failed:', err);
-    }
+    } catch (err) { console.error('Export failed:', err); }
     setExporting(false);
   };
 
   return (
     <div className="space-y-3">
-      <div className="bg-white/80 border border-border/30 rounded-2xl p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-accent-gold/15 to-amber-400/10 flex items-center justify-center">
-            <span className="text-sm">📥</span>
+      <div className="bg-white/80 border border-border/30 rounded-2xl p-4 sm:p-5">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-gold/15 to-amber-400/10 border border-accent-gold/20 flex items-center justify-center">
+            <span className="text-base">📥</span>
           </div>
           <div>
-            <p className="text-xs font-semibold text-text-primary">Export PDF Reports</p>
-            <p className="text-[9px] text-text-muted">Generate phone-native PDF reports</p>
+            <p className="text-sm font-bold text-text-primary">Export PDF</p>
+            <p className="text-[10px] text-text-muted">Generate phone-native PDF reports</p>
           </div>
         </div>
 
-        {/* Quick range buttons */}
         <div className="flex flex-wrap gap-1.5 mb-3">
           {QUICK_RANGES.map(r => (
             <button key={r.key} onClick={() => setQuickRange(r.key)}
-              className={`px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all ${
-                quickRange === r.key
-                  ? 'bg-accent-gold text-white shadow-md'
-                  : 'bg-bg-elevated/60 text-text-muted hover:text-text-primary hover:bg-bg-elevated'
-              }`}>
-              {r.label}
-            </button>
+              className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold transition-all ${
+                quickRange === r.key ? 'bg-accent-gold text-white shadow-md shadow-accent-gold/20' : 'bg-bg-elevated/60 text-text-muted hover:text-text-primary hover:bg-bg-elevated'
+              }`}>{r.label}</button>
           ))}
           <button onClick={() => setQuickRange('custom')}
-            className={`px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all ${
-              quickRange === 'custom'
-                ? 'bg-accent-gold text-white shadow-md'
-                : 'bg-bg-elevated/60 text-text-muted hover:text-text-primary hover:bg-bg-elevated'
-            }`}>
-            📅 Custom
-          </button>
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold transition-all ${
+              quickRange === 'custom' ? 'bg-accent-gold text-white shadow-md shadow-accent-gold/20' : 'bg-bg-elevated/60 text-text-muted hover:text-text-primary hover:bg-bg-elevated'
+            }`}>📅 Custom</button>
         </div>
 
         {quickRange === 'custom' && (
@@ -119,21 +112,18 @@ function ExportTab() {
           </div>
         )}
 
-        {/* Stats preview */}
         {stats && (
           <div className="grid grid-cols-3 gap-2 mb-3">
-            <div className="bg-bg-elevated/30 rounded-xl p-2.5 text-center">
-              <p className="text-lg font-bold font-mono text-text-primary">{stats.count}</p>
-              <p className="text-[8px] text-text-muted">Reports</p>
-            </div>
-            <div className="bg-bg-elevated/30 rounded-xl p-2.5 text-center">
-              <p className="text-lg font-bold font-mono text-accent-gold">{formatBDT(stats.totalRevenue).slice(0, -3)}K</p>
-              <p className="text-[8px] text-text-muted">Revenue</p>
-            </div>
-            <div className="bg-bg-elevated/30 rounded-xl p-2.5 text-center">
-              <p className="text-lg font-bold font-mono text-accent-teal">{formatBDT(stats.totalAdvance).slice(0, -3)}K</p>
-              <p className="text-[8px] text-text-muted">Advance</p>
-            </div>
+            {[
+              { value: stats.count, label: 'Reports', color: 'text-text-primary' },
+              { value: formatBDT(stats.totalRevenue).slice(0, -3) + 'K', label: 'Revenue', color: 'text-accent-gold' },
+              { value: formatBDT(stats.totalAdvance).slice(0, -3) + 'K', label: 'Advance', color: 'text-accent-teal' },
+            ].map((s, i) => (
+              <div key={i} className="bg-bg-elevated/30 rounded-xl p-3 text-center border border-border/20">
+                <p className={`text-lg font-bold font-mono ${s.color}`}>{s.value}</p>
+                <p className="text-[8px] text-text-muted">{s.label}</p>
+              </div>
+            ))}
           </div>
         )}
 
@@ -147,7 +137,6 @@ function ExportTab() {
         </button>
       </div>
 
-      {/* Hidden Range PDF render */}
       {filteredReports.length > 0 && (
         <RangePDF reports={filteredReports} rangeLabel={QUICK_RANGES.find(r => r.key === quickRange)?.label || 'Custom Range'} />
       )}
@@ -159,24 +148,22 @@ function UserCard({ u, currentUser, onRoleChange, onRemove, onClick }) {
   const role = ROLE_OPTIONS.find(r => r.value === u.role) || ROLE_OPTIONS[0];
   const isSelf = u.uid === currentUser?.uid;
   return (
-    <button onClick={onClick} className="w-full text-left bg-white/80 border border-border/30 rounded-2xl p-4 hover:shadow-lg hover:shadow-accent-gold/8 hover:border-accent-gold/20 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 relative overflow-hidden group">
-      <div className="absolute top-0 left-0 w-full h-0.5 rounded-t-2xl opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: `linear-gradient(90deg, ${role.color}, ${role.color}80, transparent)` }} />
+    <button onClick={onClick} className="w-full text-left bg-white/80 border border-border/30 rounded-xl p-3.5 hover:shadow-lg hover:shadow-accent-gold/5 hover:border-accent-gold/15 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 group relative overflow-hidden">
+      <div className="absolute inset-x-0 top-0 h-0.5 rounded-t-xl opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: `linear-gradient(90deg, ${role.color}, transparent)` }} />
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0" style={{ background: `${role.color}15` }}>
-          {role.icon}
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${role.color}12` }}>
+          <span className="text-base">{role.icon}</span>
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <p className="text-sm font-semibold text-text-primary truncate">{u.email || u.uid}</p>
             {isSelf && <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-accent-gold/10 text-accent-gold font-bold">YOU</span>}
           </div>
-          <p className="text-[10px] font-mono text-text-muted truncate">{u.uid}</p>
+          <p className="text-[9px] font-mono text-text-muted truncate">{u.uid}</p>
         </div>
-        <div className="flex-shrink-0">
-          <span className="text-[9px] px-2 py-1 rounded-full font-bold" style={{ background: `${role.color}15`, color: role.color }}>
-            {role.label}
-          </span>
-        </div>
+        <span className="text-[9px] px-2 py-1 rounded-full font-bold flex-shrink-0" style={{ background: `${role.color}12`, color: role.color }}>
+          {role.label}
+        </span>
       </div>
     </button>
   );
@@ -184,27 +171,23 @@ function UserCard({ u, currentUser, onRoleChange, onRemove, onClick }) {
 
 function RequestCard({ req, onApprove, onReject, onClick }) {
   return (
-    <button onClick={onClick} className="w-full text-left bg-white/80 border border-border/30 rounded-2xl p-4 hover:shadow-lg hover:shadow-accent-gold/8 hover:border-accent-gold/20 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 group">
+    <button onClick={onClick} className="w-full text-left bg-white/80 border border-border/30 rounded-xl p-3.5 hover:shadow-lg hover:shadow-accent-gold/5 hover:border-accent-gold/15 hover:-translate-y-0.5 transition-all duration-300 group">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/50 flex items-center justify-center text-lg flex-shrink-0">
-          📩
+        <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200/50 flex items-center justify-center flex-shrink-0">
+          <span className="text-base">📩</span>
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-text-primary truncate">{req.email || 'No email'}</p>
-          <p className="text-[10px] font-mono text-text-muted">UID: {req.uid}</p>
+          <p className="text-[9px] font-mono text-text-muted truncate">UID: {req.uid}</p>
           {req.createdAt && (
-            <p className="text-[9px] text-text-muted mt-0.5">Requested: {new Date(req.createdAt.seconds ? req.createdAt.seconds * 1000 : req.createdAt).toLocaleDateString()}</p>
+            <p className="text-[8px] text-text-muted mt-0.5">Requested: {new Date(req.createdAt.seconds ? req.createdAt.seconds * 1000 : req.createdAt).toLocaleDateString()}</p>
           )}
         </div>
         <div className="flex items-center gap-1.5 flex-shrink-0" onClick={e => e.stopPropagation()}>
           <button onClick={() => onApprove(req)}
-            className="px-2.5 py-1.5 bg-accent-teal/10 border border-accent-teal/20 rounded-lg text-[10px] font-bold text-accent-teal hover:bg-accent-teal/20 transition-colors">
-            ✓
-          </button>
+            className="px-2.5 py-1.5 bg-accent-teal/10 border border-accent-teal/15 rounded-lg text-[10px] font-bold text-accent-teal hover:bg-accent-teal/20 transition-colors">✓</button>
           <button onClick={() => onReject(req)}
-            className="px-2.5 py-1.5 bg-accent-rose/10 border border-accent-rose/20 rounded-lg text-[10px] font-bold text-accent-rose hover:bg-accent-rose/20 transition-colors">
-            ✕
-          </button>
+            className="px-2.5 py-1.5 bg-accent-rose/10 border border-accent-rose/15 rounded-lg text-[10px] font-bold text-accent-rose hover:bg-accent-rose/20 transition-colors">✕</button>
         </div>
       </div>
     </button>
@@ -224,6 +207,7 @@ export default function Settings() {
   const [addMsg, setAddMsg] = useState('');
   const [addError, setAddError] = useState('');
   const [modal, setModal] = useState(null);
+  const tabRef = useRef(null);
 
   const loadData = async () => {
     setLoading(true);
@@ -236,6 +220,13 @@ export default function Settings() {
   useEffect(() => {
     if (isSuperAdmin) loadData();
   }, [isSuperAdmin]);
+
+  useEffect(() => {
+    if (tabRef.current) {
+      const btn = tabRef.current.querySelector(`[data-tab="${tab}"]`);
+      if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }, [tab]);
 
   const handleApprove = async (req) => {
     await approveRequest(req.id, req.uid, req.email);
@@ -260,19 +251,15 @@ export default function Settings() {
   };
 
   const handleDirectAdd = async () => {
-    setAddMsg('');
-    setAddError('');
+    setAddMsg(''); setAddError('');
     if (!directUid && !directEmail) { setAddError('Enter UID or email'); return; }
     try {
       const uid = directUid || directEmail;
       await addUserDirectly(uid, directEmail, directRole);
       setAddMsg(`✓ ${directEmail || uid} added as ${directRole}`);
-      setDirectEmail('');
-      setDirectUid('');
+      setDirectEmail(''); setDirectUid('');
       loadData();
-    } catch (err) {
-      setAddError('Failed to add user');
-    }
+    } catch (err) { setAddError('Failed to add user'); }
   };
 
   const openUserDetail = (u) => {
@@ -314,9 +301,7 @@ export default function Settings() {
                 ))}
               </div>
               <button onClick={() => { handleRemoveUser(u.uid); setModal(null); }}
-                className="w-full py-2.5 bg-accent-rose/5 border border-accent-rose/15 rounded-xl text-xs font-bold text-accent-rose hover:bg-accent-rose/10 transition-colors">
-                Remove User
-              </button>
+                className="w-full py-2.5 bg-accent-rose/5 border border-accent-rose/15 rounded-xl text-xs font-bold text-accent-rose hover:bg-accent-rose/10 transition-colors">Remove User</button>
             </div>
           )}
         </div>
@@ -346,13 +331,9 @@ export default function Settings() {
           )}
           <div className="flex gap-2">
             <button onClick={() => { handleApprove(req); setModal(null); }}
-              className="flex-1 py-3 bg-gradient-to-r from-accent-teal to-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-accent-teal/25 hover:shadow-xl hover:-translate-y-0.5 transition-all">
-              ✓ Approve
-            </button>
+              className="flex-1 py-3 bg-gradient-to-r from-accent-teal to-emerald-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-accent-teal/25 hover:shadow-xl hover:-translate-y-0.5 transition-all">✓ Approve</button>
             <button onClick={() => { handleReject(req); setModal(null); }}
-              className="flex-1 py-3 bg-gradient-to-r from-accent-rose to-rose-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-accent-rose/25 hover:shadow-xl hover:-translate-y-0.5 transition-all">
-              ✕ Reject
-            </button>
+              className="flex-1 py-3 bg-gradient-to-r from-accent-rose to-rose-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-accent-rose/25 hover:shadow-xl hover:-translate-y-0.5 transition-all">✕ Reject</button>
           </div>
         </div>
       ),
@@ -379,49 +360,39 @@ export default function Settings() {
     });
   };
 
-  // ─── Non-admin view ───
   if (!isSuperAdmin) {
     return (
-      <div className="space-y-4 max-w-md mx-auto animate-fade-in">
-        <div className="relative overflow-hidden bg-gradient-to-br from-accent-rose to-rose-500 rounded-2xl p-5 text-white shadow-lg shadow-accent-rose/20">
-          <div className="absolute -top-8 -right-8 w-24 h-24 bg-white/10 rounded-full" />
-          <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-white/10 rounded-full" />
-          <div className="relative">
-            <h1 className="text-xl font-bold tracking-tight">Access Denied</h1>
-            <p className="text-white/80 text-xs mt-1">Settings is restricted to Super Admin only</p>
+      <div className="min-h-[80vh] flex items-center justify-center p-4 animate-fade-in">
+        <div className="w-full max-w-sm text-center">
+          <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-accent-rose/20 to-rose-500/5 border border-accent-rose/20 flex items-center justify-center mx-auto mb-5">
+            <span className="text-3xl">🔒</span>
           </div>
-        </div>
-
-        <div className="bg-white/80 border border-border/30 rounded-2xl p-6 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-accent-rose/10 border border-accent-rose/20 flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl">🔒</span>
-          </div>
-          <h3 className="font-semibold text-text-primary mb-1">Super Admin Only</h3>
-          <p className="text-xs text-text-muted mb-4">You don't have permission to access system settings.</p>
-          <button onClick={() => navigate('/profile')}
-            className="btn-primary text-sm">
-            Go to Profile
+          <h1 className="text-xl font-bold text-text-primary mb-2">Access Restricted</h1>
+          <p className="text-sm text-text-muted mb-6 leading-relaxed">Settings is limited to Super Admin access only. Contact your administrator for role changes.</p>
+          <button onClick={() => navigate('/')}
+            className="px-6 py-3 bg-gradient-to-r from-accent-gold to-amber-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-accent-gold/20 hover:shadow-xl hover:-translate-y-0.5 transition-all inline-flex items-center gap-2">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+            Back to Dashboard
           </button>
         </div>
       </div>
     );
   }
 
-  // ─── Super Admin view ───
   return (
-    <div className="space-y-4 max-w-md mx-auto animate-fade-in">
+    <div className="max-w-2xl mx-auto px-3 sm:px-4 py-4 space-y-4 animate-fade-in">
       {/* Header */}
       <div className="relative overflow-hidden bg-gradient-to-br from-accent-gold to-amber-500 rounded-2xl p-5 text-white shadow-lg shadow-accent-gold/20">
-        <div className="absolute -top-8 -right-8 w-24 h-24 bg-white/10 rounded-full" />
-        <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-white/10 rounded-full" />
+        <div className="absolute -top-8 -right-8 w-32 h-32 bg-white/8 rounded-full" />
+        <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-white/8 rounded-full" />
         <div className="relative">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold tracking-tight">Admin Settings</h1>
-              <p className="text-white/80 text-xs mt-1">{users.length} users · {requests.length} pending</p>
+              <h1 className="text-xl font-bold tracking-tight">Settings</h1>
+              <p className="text-white/80 text-xs mt-1">{users.length} users · {requests.length} pending requests</p>
             </div>
             <button onClick={loadData} disabled={loading}
-              className="w-8 h-8 rounded-xl bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all disabled:opacity-50">
+              className="w-9 h-9 rounded-xl bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all disabled:opacity-50 backdrop-blur-sm">
               <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
@@ -431,39 +402,33 @@ export default function Settings() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-bg-elevated/60 p-1 rounded-xl border border-border/30 overflow-x-auto scrollbar-none">
-        {[
-          { key: 'users', icon: '👥', label: 'Users', count: users.length },
-          { key: 'requests', icon: '📩', label: 'Requests', count: requests.length },
-          { key: 'add', icon: '➕', label: 'Add User' },
-          { key: 'entry', icon: '📝', label: 'Data Entry' },
-          { key: 'export', icon: '📥', label: 'Export' },
-        ].map(t => (
-          <button key={t.key} onClick={() => setTab(t.key)}
-            className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-[10px] font-semibold transition-all whitespace-nowrap ${
-              tab === t.key ? 'bg-white text-text-primary shadow-sm' : 'text-text-muted hover:text-text-primary'
+      <div ref={tabRef} className="flex gap-1 bg-bg-elevated/60 p-1 rounded-xl border border-border/30 overflow-x-auto scrollbar-none snap-x snap-mandatory">
+        {TABS.map(t => (
+          <button key={t.key} data-tab={t.key} onClick={() => setTab(t.key)}
+            className={`snap-start flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg text-[10px] font-semibold transition-all whitespace-nowrap ${
+              tab === t.key ? 'bg-white text-text-primary shadow-sm shadow-black/5' : 'text-text-muted hover:text-text-primary hover:bg-white/40'
             }`}>
             <span className="text-xs">{t.icon}</span>
             <span>{t.label}</span>
-            {t.count !== undefined && (
-              <span className={`text-[8px] px-1 py-0.5 rounded-full font-bold ${
+            {(t.key === 'users' || t.key === 'requests') && (
+              <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold ${
                 tab === t.key ? 'bg-accent-gold/10 text-accent-gold' : 'bg-bg-elevated text-text-muted'
-              }`}>{t.count}</span>
+              }`}>{t.key === 'users' ? users.length : requests.length}</span>
             )}
           </button>
         ))}
       </div>
 
-      {/* Quick Stats */}
+      {/* Quick Role Stats */}
       {tab === 'users' && (
-        <div className="grid grid-cols-3 gap-1.5">
+        <div className="grid grid-cols-3 gap-2">
           {ROLE_OPTIONS.map(r => {
             const count = users.filter(u => u.role === r.value).length;
             return (
               <button key={r.value} onClick={openRoleGuide}
-                className="bg-white/80 border border-border/30 rounded-xl p-3 text-center hover:shadow-md transition-all">
+                className="bg-white/80 border border-border/30 rounded-xl p-3.5 text-center hover:shadow-md hover:border-accent-gold/15 transition-all">
                 <span className="text-lg">{r.icon}</span>
-                <p className="text-sm font-bold font-mono mt-1" style={{ color: r.color }}>{count}</p>
+                <p className="text-lg font-bold font-mono mt-1" style={{ color: r.color }}>{count}</p>
                 <p className="text-[9px] text-text-muted">{r.label}s</p>
               </button>
             );
@@ -475,7 +440,7 @@ export default function Settings() {
       {tab === 'users' && (
         <div className="space-y-2">
           {loading ? (
-            <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-16 bg-bg-elevated/50 rounded-2xl animate-pulse" />)}</div>
+            <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-14 bg-bg-elevated/50 rounded-xl animate-pulse" />)}</div>
           ) : users.length === 0 ? (
             <div className="bg-white/80 border border-border/30 rounded-2xl p-8 text-center">
               <p className="text-sm text-text-muted">No users yet</p>
@@ -492,7 +457,7 @@ export default function Settings() {
       {tab === 'requests' && (
         <div className="space-y-2">
           {loading ? (
-            <div className="space-y-2">{[1,2].map(i => <div key={i} className="h-16 bg-bg-elevated/50 rounded-2xl animate-pulse" />)}</div>
+            <div className="space-y-2">{[1,2].map(i => <div key={i} className="h-14 bg-bg-elevated/50 rounded-xl animate-pulse" />)}</div>
           ) : requests.length === 0 ? (
             <div className="bg-white/80 border border-border/30 rounded-2xl p-8 text-center">
               <div className="w-12 h-12 rounded-xl bg-accent-teal/10 flex items-center justify-center mx-auto mb-3">
@@ -512,27 +477,27 @@ export default function Settings() {
       {/* Add User Tab */}
       {tab === 'add' && (
         <div className="space-y-3">
-          <div className="bg-white/80 border border-border/30 rounded-2xl p-4 space-y-3">
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-8 h-8 rounded-xl bg-accent-gold/10 flex items-center justify-center">
-                <span className="text-sm">➕</span>
+          <div className="bg-white/80 border border-border/30 rounded-2xl p-4 sm:p-5 space-y-3">
+            <div className="flex items-center gap-3 mb-1">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-gold/15 to-amber-400/10 border border-accent-gold/20 flex items-center justify-center">
+                <span className="text-base">➕</span>
               </div>
               <div>
-                <p className="text-xs font-semibold text-text-primary">Add User Directly</p>
-                <p className="text-[9px] text-text-muted">Grant access instantly</p>
+                <p className="text-sm font-bold text-text-primary">Add User Directly</p>
+                <p className="text-[10px] text-text-muted">Grant access instantly without signup</p>
               </div>
             </div>
             <input type="text" placeholder="Firebase UID" value={directUid} onChange={e => setDirectUid(e.target.value)}
-              className="w-full text-xs px-3 py-2.5 border border-border/50 rounded-xl focus:outline-none focus:border-accent-gold/50 bg-white" />
-            <input type="email" placeholder="Email (optional)" value={directEmail} onChange={e => setDirectEmail(e.target.value)}
-              className="w-full text-xs px-3 py-2.5 border border-border/50 rounded-xl focus:outline-none focus:border-accent-gold/50 bg-white" />
+              className="w-full text-xs px-3.5 py-3 border border-border/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent-gold/20 focus:border-accent-gold/50 bg-white transition-all" />
+            <input type="email" placeholder="Email address (optional)" value={directEmail} onChange={e => setDirectEmail(e.target.value)}
+              className="w-full text-xs px-3.5 py-3 border border-border/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent-gold/20 focus:border-accent-gold/50 bg-white transition-all" />
             <div>
-              <p className="text-[9px] text-text-muted uppercase mb-1.5 font-medium">Assign Role</p>
+              <p className="text-[9px] text-text-muted uppercase mb-2 font-medium">Assign Role</p>
               <div className="grid grid-cols-2 gap-2">
                 {ROLE_OPTIONS.filter(r => r.value !== 'super_admin').map(r => (
                   <button key={r.value} onClick={() => setDirectRole(r.value)}
-                    className={`p-3 rounded-xl border text-center transition-all ${
-                      directRole === r.value ? 'border-accent-gold/30 bg-accent-gold/5 shadow-md' : 'border-border/30 hover:border-accent-gold/20'
+                    className={`p-3.5 rounded-xl border text-center transition-all ${
+                      directRole === r.value ? 'border-accent-gold/30 bg-accent-gold/5 shadow-md shadow-accent-gold/10' : 'border-border/30 hover:border-accent-gold/20 bg-white/50'
                     }`}>
                     <span className="text-lg">{r.icon}</span>
                     <p className="text-[10px] font-bold mt-1" style={{ color: r.color }}>{r.label}</p>
@@ -542,54 +507,48 @@ export default function Settings() {
             </div>
             <button onClick={handleDirectAdd}
               className="w-full py-3 bg-gradient-to-r from-accent-gold to-amber-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-accent-gold/25 hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-40"
-              disabled={!directUid && !directEmail}>
-              Add User
-            </button>
+              disabled={!directUid && !directEmail}>Add User</button>
             {addMsg && <p className="text-xs text-accent-teal text-center font-medium">{addMsg}</p>}
             {addError && <p className="text-xs text-accent-rose text-center font-medium">{addError}</p>}
           </div>
 
-          {/* Role guide */}
           <button onClick={openRoleGuide}
-            className="w-full bg-white/80 border border-border/30 rounded-2xl p-4 text-left hover:shadow-md transition-all">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-accent-gold/10 flex items-center justify-center">
-                <span className="text-sm">📋</span>
+            className="w-full bg-white/80 border border-border/30 rounded-2xl p-4 text-left hover:shadow-md hover:border-accent-gold/15 transition-all group">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-gold/10 to-amber-400/5 border border-accent-gold/20 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <span className="text-base">📋</span>
               </div>
               <div>
-                <p className="text-xs font-semibold text-text-primary">Role Permissions Guide</p>
-                <p className="text-[9px] text-text-muted">Click to see what each role can do</p>
+                <p className="text-sm font-semibold text-text-primary">Role Permissions Guide</p>
+                <p className="text-[10px] text-text-muted">See what each role can do</p>
               </div>
+              <svg className="w-4 h-4 text-text-muted ml-auto group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6" /></svg>
             </div>
           </button>
         </div>
       )}
 
       {/* Export Tab */}
-      {tab === 'export' && (
-        <ExportTab />
-      )}
+      {tab === 'export' && <ExportTab />}
 
       {/* Data Entry Tab */}
-      {tab === 'entry' && (
-        <DataEntryTab />
-      )}
+      {tab === 'entry' && <DataEntryTab />}
 
-      {/* Account */}
-      <div className="bg-white/80 border border-border/30 rounded-2xl p-4">
-        <div className="flex items-center gap-3">
+      {/* Account Card */}
+      <div className="bg-white/80 border border-border/30 rounded-2xl p-4 hover:shadow-md transition-shadow">
+        <div className="flex items-center gap-3.5">
           {user?.photoURL ? (
-            <img src={user.photoURL} alt="" className="w-10 h-10 rounded-xl shadow-md" />
+            <img src={user.photoURL} alt="" className="w-11 h-11 rounded-xl shadow-md ring-2 ring-accent-gold/20" />
           ) : (
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-gold to-amber-400 flex items-center justify-center text-sm text-white font-bold shadow-md">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-accent-gold to-amber-400 flex items-center justify-center text-base text-white font-bold shadow-md ring-2 ring-accent-gold/20">
               {user?.email?.charAt(0).toUpperCase() || 'A'}
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-text-primary truncate">{user?.displayName || user?.email}</p>
+            <p className="text-sm font-bold text-text-primary truncate">{user?.displayName || user?.email}</p>
             <p className="text-[10px] text-text-muted truncate">{user?.email}</p>
           </div>
-          <span className="text-[9px] px-2 py-1 rounded-full bg-accent-gold/10 text-accent-gold font-bold">👑 Super Admin</span>
+          <span className="text-[9px] px-2.5 py-1 rounded-full bg-accent-gold/10 text-accent-gold font-bold border border-accent-gold/20">👑 Admin</span>
         </div>
       </div>
 
