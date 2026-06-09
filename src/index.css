@@ -98,18 +98,20 @@ body {
 
 /* ─── Recharts Light Overrides ─── */
 .recharts-default-tooltip {
-  background: #FFFFFF !important;
-  border: 1px solid #E2E8F0 !important;
+  background: rgba(255,255,255,0.95) !important;
+  border: 1px solid rgba(226,232,240,0.4) !important;
   border-radius: 12px !important;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.08) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04) !important;
   padding: 10px 14px !important;
+  backdrop-filter: blur(12px) !important;
 }
-.recharts-tooltip-label { color: #0F172A !important; font-weight: 600 !important; font-size: 13px !important; }
-.recharts-tooltip-item { color: #C9A84C !important; font-size: 12px !important; }
+.recharts-tooltip-label { color: #0F172A !important; font-weight: 600 !important; font-size: 12px !important; }
+.recharts-tooltip-item { color: #C9A84C !important; font-size: 11px !important; font-weight: 500 !important; }
 .recharts-cartesian-grid-horizontal line,
-.recharts-cartesian-grid-vertical line { stroke: #E2E8F0; stroke-opacity: 0.6; }
-.recharts-text { fill: #64748B; font-size: 11px; }
-.recharts-default-legend { font-size: 12px !important; }
+.recharts-cartesian-grid-vertical line { stroke: #E2E8F0; stroke-opacity: 0.4; }
+.recharts-text { fill: #94A3B8; font-size: 10px; }
+.recharts-default-legend { font-size: 11px !important; }
+.recharts-active-dot circle { filter: drop-shadow(0 2px 6px rgba(201,168,76,0.3)); }
 
 details > summary { -webkit-user-select: none; user-select: none; }
 details > summary::-webkit-details-marker { display: none; }

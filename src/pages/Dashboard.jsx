@@ -20,6 +20,7 @@ import DailyReport from '../components/Reports/DailyReport';
 import WeeklyReport from '../components/Reports/WeeklyReport';
 import MonthlyReport from '../components/Reports/MonthlyReport';
 import Alert from '../components/UI/Alert';
+import DetailModal from '../components/UI/DetailModal';
 import { CardSkeleton, ChartSkeleton } from '../components/UI/Loader';
 
 const RANGES = [
@@ -29,10 +30,20 @@ const RANGES = [
   { label: '30d', value: '30d' },
 ];
 
-function Section({ title, subtitle, count, defaultOpen = true, children, icon }) {
+const SECTION_THEMES = {
+  'Revenue & Orders': { accent: '#C9A84C', icon: '💰' },
+  'Period Analysis': { accent: '#0D9488', icon: '📊' },
+  'Weekday & Category': { accent: '#3B82F6', icon: '📅' },
+  'Stock Intelligence': { accent: '#E11D48', icon: '📦' },
+  'Rolling Averages': { accent: '#A78BFA', icon: '📈' },
+  'Advanced Trends': { accent: '#FB923C', icon: '🔥' },
+  'Comparisons': { accent: '#C9A84C', icon: '⚖' },
+  'Products': { accent: '#0D9488', icon: '🛍' },
+};
+
+function Section({ title, subtitle, count, defaultOpen = true, children, onExpand }) {
   return (
     <details open={defaultOpen} className="group relative">
-      {/* Top gradient accent line */}
       <div className="absolute top-0 left-0 right-0 h-[2px] rounded-full bg-gradient-to-r from-accent-gold/40 via-accent-teal/30 to-transparent opacity-60 group-open:opacity-100 transition-opacity pointer-events-none" />
 
       <summary className="flex items-center justify-between cursor-pointer mb-3 list-none select-none py-2 px-3 rounded-xl hover:bg-bg-elevated/30 transition-colors -mx-1">
@@ -45,11 +56,24 @@ function Section({ title, subtitle, count, defaultOpen = true, children, icon })
             {subtitle && <p className="text-[10px] sm:text-[11px] text-text-muted/70 truncate mt-0.5">{subtitle}</p>}
           </div>
         </div>
-        {count !== undefined && (
-          <span className="text-[9px] font-mono text-text-muted/60 bg-bg-elevated/80 px-2 py-0.5 rounded-full border border-border/40 flex-shrink-0 ml-2">
-            {count}
-          </span>
-        )}
+        <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+          {count !== undefined && (
+            <span className="text-[9px] font-mono text-text-muted/60 bg-bg-elevated/80 px-2 py-0.5 rounded-full border border-border/40">
+              {count}
+            </span>
+          )}
+          {onExpand && (
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onExpand(); }}
+              className="w-6 h-6 rounded-lg bg-bg-elevated/60 hover:bg-accent-gold/10 flex items-center justify-center text-text-muted hover:text-accent-gold transition-all"
+              title="Expand full view"
+            >
+              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+              </svg>
+            </button>
+          )}
+        </div>
       </summary>
 
       <div className="pb-1">
@@ -88,6 +112,7 @@ export default function Dashboard() {
   const [dismissedAlerts, setDismissedAlerts] = useState(new Set());
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
+  const [expandedSection, setExpandedSection] = useState(null);
 
   const sortedReports = useMemo(() => {
     if (!reports || reports.length === 0) return [];
@@ -156,6 +181,7 @@ export default function Dashboard() {
   }
 
   return (
+    <>
     <div className="space-y-3 sm:space-y-4 animate-fade-in">
 
       {/* ─── FILTER BAR — merged with layout header ─── */}
@@ -269,13 +295,13 @@ export default function Dashboard() {
       <DynamicKPIs reports={filteredReports} allReports={sortedReports} />
 
       {/* ─── PRODUCTS OVERVIEW ─── */}
-      <Section title="Products" subtitle="New, trending, dead stock" count={products?.length}>
+      <Section title="Products" subtitle="New, trending, dead stock" count={products?.length} onExpand={() => setExpandedSection('Products')}>
         <ProductsOverview products={products} reports={sortedReports} latestReport={latestReport} />
       </Section>
 
       {/* ─── REVENUE & ORDERS ─── */}
-      <Section title="Revenue & Orders" subtitle="Daily revenue, order types, and breakdown">
-        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3">
+      <Section title="Revenue & Orders" subtitle="Daily revenue, order types, and breakdown" onExpand={() => setExpandedSection('Revenue & Orders')}>
+        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3 cursor-pointer hover:shadow-md hover:border-accent-gold/15 transition-all duration-300 group/card" onClick={() => setExpandedSection('Revenue & Orders')}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-2.5 sm:gap-3">
             <div className="lg:col-span-2">
               <RevenueChart reports={filteredReports} loading={reportsLoading} />
@@ -285,59 +311,131 @@ export default function Dashboard() {
           <div className="mt-3 sm:mt-4">
             <DailyReport reports={filteredReports} loading={reportsLoading} />
           </div>
+          <div className="text-center mt-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
+            <span className="text-[9px] text-accent-gold/60">tap to expand</span>
+          </div>
         </div>
       </Section>
 
       {/* ─── PERIOD ANALYSIS ─── */}
-      <Section title="Period Analysis" subtitle="Weekly, monthly, and yearly summaries">
-        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3">
+      <Section title="Period Analysis" subtitle="Weekly, monthly, and yearly summaries" onExpand={() => setExpandedSection('Period Analysis')}>
+        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3 cursor-pointer hover:shadow-md hover:border-accent-teal/15 transition-all duration-300 group/card" onClick={() => setExpandedSection('Period Analysis')}>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
             <WeeklyReport reports={filteredReports} loading={reportsLoading} />
             <MonthlyReport reports={filteredReports} loading={reportsLoading} />
             <YearlyReport reports={sortedReports} loading={reportsLoading} />
           </div>
+          <div className="text-center mt-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
+            <span className="text-[9px] text-accent-teal/60">tap to expand</span>
+          </div>
         </div>
       </Section>
 
       {/* ─── WEEKDAY & CATEGORY ─── */}
-      <Section title="Weekday & Category" subtitle="Order patterns by day and product category">
-        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3">
+      <Section title="Weekday & Category" subtitle="Order patterns by day and product category" onExpand={() => setExpandedSection('Weekday & Category')}>
+        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3 cursor-pointer hover:shadow-md hover:border-blue-500/15 transition-all duration-300 group/card" onClick={() => setExpandedSection('Weekday & Category')}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
             <WeekdayChart reports={filteredReports} loading={reportsLoading} />
             <CategoryChart products={products} loading={reportsLoading} />
+          </div>
+          <div className="text-center mt-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
+            <span className="text-[9px] text-blue-500/60">tap to expand</span>
           </div>
         </div>
       </Section>
 
       {/* ─── STOCK INTELLIGENCE ─── */}
-      <Section title="Stock Intelligence" subtitle="Restock recommendations and product health" count={products?.length}>
-        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3">
+      <Section title="Stock Intelligence" subtitle="Restock recommendations and product health" count={products?.length} onExpand={() => setExpandedSection('Stock Intelligence')}>
+        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3 cursor-pointer hover:shadow-md hover:border-accent-rose/15 transition-all duration-300 group/card" onClick={() => setExpandedSection('Stock Intelligence')}>
           <ProductIntelligence products={products} reports={sortedReports} />
+          <div className="text-center mt-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
+            <span className="text-[9px] text-accent-rose/60">tap to expand</span>
+          </div>
         </div>
       </Section>
 
       {/* ─── ROLLING & TRENDS ─── */}
-      <Section title="Rolling Averages" subtitle="7/14/30-day moving trends">
-        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3">
+      <Section title="Rolling Averages" subtitle="7/14/30-day moving trends" onExpand={() => setExpandedSection('Rolling Averages')}>
+        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3 cursor-pointer hover:shadow-md hover:border-purple-400/15 transition-all duration-300 group/card" onClick={() => setExpandedSection('Rolling Averages')}>
           <RollingAvgChart reports={filteredReports} loading={reportsLoading} />
+          <div className="text-center mt-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
+            <span className="text-[9px] text-purple-400/60">tap to expand</span>
+          </div>
         </div>
       </Section>
 
       {/* ─── ADVANCED TRENDS ─── */}
-      <Section title="Advanced Trends" subtitle="Revenue, AOV, and product velocity over time">
-        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3">
+      <Section title="Advanced Trends" subtitle="Revenue, AOV, and product velocity over time" onExpand={() => setExpandedSection('Advanced Trends')}>
+        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3 cursor-pointer hover:shadow-md hover:border-orange-400/15 transition-all duration-300 group/card" onClick={() => setExpandedSection('Advanced Trends')}>
           <AdvancedTrends reports={filteredReports} />
+          <div className="text-center mt-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
+            <span className="text-[9px] text-orange-400/60">tap to expand</span>
+          </div>
         </div>
       </Section>
 
       {/* ─── COMPARISONS ─── */}
-      <Section title="Comparisons" subtitle="Week-over-week, month-over-month, same-day">
-        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3">
+      <Section title="Comparisons" subtitle="Week-over-week, month-over-month, same-day" onExpand={() => setExpandedSection('Comparisons')}>
+        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3 cursor-pointer hover:shadow-md hover:border-accent-gold/15 transition-all duration-300 group/card" onClick={() => setExpandedSection('Comparisons')}>
           <ComparisonCards reports={sortedReports} loading={reportsLoading} />
+          <div className="text-center mt-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
+            <span className="text-[9px] text-accent-gold/60">tap to expand</span>
+          </div>
         </div>
       </Section>
 
     </div>
+
+    {/* ─── EXPAND MODALS ─── */}
+    {expandedSection && (
+      <DetailModal
+        open={!!expandedSection}
+        onClose={() => setExpandedSection(null)}
+        title={expandedSection}
+        subtitle={SECTION_THEMES[expandedSection]?.subtitle || ''}
+        color={SECTION_THEMES[expandedSection]?.accent || '#C9A84C'}
+        icon={<span className="text-lg">{SECTION_THEMES[expandedSection]?.icon || '📊'}</span>}
+      >
+        <div className="space-y-4">
+          {expandedSection === 'Revenue & Orders' && (
+            <>
+              <RevenueChart reports={filteredReports} loading={reportsLoading} />
+              <OrderTypeChart report={latestReport} loading={reportsLoading} />
+              <DailyReport reports={filteredReports} loading={reportsLoading} />
+            </>
+          )}
+          {expandedSection === 'Period Analysis' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <WeeklyReport reports={filteredReports} loading={reportsLoading} />
+              <MonthlyReport reports={filteredReports} loading={reportsLoading} />
+              <YearlyReport reports={sortedReports} loading={reportsLoading} />
+            </div>
+          )}
+          {expandedSection === 'Weekday & Category' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <WeekdayChart reports={filteredReports} loading={reportsLoading} />
+              <CategoryChart products={products} loading={reportsLoading} />
+            </div>
+          )}
+          {expandedSection === 'Stock Intelligence' && (
+            <ProductIntelligence products={products} reports={sortedReports} />
+          )}
+          {expandedSection === 'Rolling Averages' && (
+            <RollingAvgChart reports={filteredReports} loading={reportsLoading} />
+          )}
+          {expandedSection === 'Advanced Trends' && (
+            <AdvancedTrends reports={filteredReports} />
+          )}
+          {expandedSection === 'Comparisons' && (
+            <ComparisonCards reports={sortedReports} loading={reportsLoading} />
+          )}
+          {expandedSection === 'Products' && (
+            <ProductsOverview products={products} reports={sortedReports} latestReport={latestReport} />
+          )}
+        </div>
+      </DetailModal>
+    )}
+    </>
   );
 }
 
