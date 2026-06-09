@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { subDays, format } from 'date-fns';
 import { useReports } from '../hooks/useReports';
 import { useProducts } from '../hooks/useProducts';
 import { computeAlerts, computeDailyReport } from '../utils/analytics';
@@ -22,12 +23,10 @@ import Alert from '../components/UI/Alert';
 import { CardSkeleton, ChartSkeleton } from '../components/UI/Loader';
 
 const RANGES = [
+  { label: 'Yesterday', value: 'yesterday' },
   { label: 'Today', value: 'today' },
-  { label: '7d', value: 7 },
-  { label: '30d', value: 30 },
-  { label: '60d', value: 60 },
-  { label: '90d', value: 90 },
-  { label: 'All', value: 'all' },
+  { label: '7d', value: '7d' },
+  { label: '30d', value: '30d' },
 ];
 
 function CollapsibleSection({ title, count, defaultOpen = true, children }) {
@@ -49,7 +48,10 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { reports, loading: reportsLoading } = useReports();
   const { products } = useProducts();
-  const [timeRange, setTimeRange] = useState(7);
+  const [range, setRange] = useState({ type: '7d' });
+  const [showCustom, setShowCustom] = useState(false);
+  const [customStart, setCustomStart] = useState('');
+  const [customEnd, setCustomEnd] = useState('');
 
   const sortedReports = useMemo(() => {
     if (!reports || reports.length === 0) return [];
@@ -57,9 +59,19 @@ export default function Dashboard() {
   }, [reports]);
 
   const filteredReports = useMemo(() => {
-    if (timeRange === 'all') return sortedReports;
-    return sortedReports.slice(0, timeRange === 'today' ? 1 : timeRange);
-  }, [sortedReports, timeRange]);
+    if (range.type === 'custom') {
+      if (!range.start || !range.end) return [];
+      return sortedReports.filter(r => r.dateString >= range.start && r.dateString <= range.end);
+    }
+    if (range.type === 'today') return sortedReports.slice(0, 1);
+    if (range.type === 'yesterday') {
+      const yd = format(subDays(new Date(), 1), 'yyyy-MM-dd');
+      return sortedReports.filter(r => r.dateString === yd);
+    }
+    if (range.type === '7d') return sortedReports.slice(0, 7);
+    if (range.type === '30d') return sortedReports.slice(0, 30);
+    return sortedReports;
+  }, [sortedReports, range]);
 
   const latestReport = sortedReports.length > 0 ? sortedReports[0] : null;
   const previousReport = sortedReports.length > 1 ? sortedReports[1] : null;
@@ -108,7 +120,12 @@ export default function Dashboard() {
         <div>
           <h2 className="font-semibold text-xl sm:text-2xl text-text-primary">Dashboard</h2>
           <p className="text-xs text-text-muted mt-0.5">
-            {filteredReports.length} reports · {timeRange === 'today' ? 'Latest' : timeRange === 'all' ? 'All time' : `Last ${timeRange}`}
+            {filteredReports.length} reports · {
+              range.type === 'yesterday' ? 'Yesterday' :
+              range.type === 'today' ? 'Latest' :
+              range.type === 'custom' ? `${range.start} to ${range.end}` :
+              `Last ${range.type}`
+            }
           </p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
@@ -116,9 +133,9 @@ export default function Dashboard() {
             {RANGES.map(r => (
               <button
                 key={r.value}
-                onClick={() => setTimeRange(r.value)}
+                onClick={() => { setRange({ type: r.value }); setShowCustom(false); }}
                 className={`px-2 sm:px-3 py-1.5 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
-                  timeRange === r.value
+                  range.type === r.value
                     ? 'bg-white text-accent-gold border border-accent-gold/20 shadow-sm'
                     : 'text-text-muted hover:text-text-primary'
                 }`}
@@ -126,7 +143,34 @@ export default function Dashboard() {
                 {r.label}
               </button>
             ))}
+            <button
+              onClick={() => setShowCustom(!showCustom)}
+              className={`px-2 py-1.5 text-xs font-medium rounded-md transition-all ${
+                range.type === 'custom'
+                  ? 'bg-white text-accent-gold border border-accent-gold/20 shadow-sm'
+                  : 'text-text-muted hover:text-text-primary'
+              }`}
+              title="Custom range"
+            >
+              📅
+            </button>
           </div>
+          {showCustom && (
+            <div className="flex items-center gap-1.5 bg-white border border-border rounded-lg p-1 shadow-sm">
+              <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)}
+                className="text-xs px-2 py-1.5 border border-border rounded-md w-28 focus:outline-none focus:border-accent-gold/50" />
+              <span className="text-text-muted text-xs">–</span>
+              <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)}
+                className="text-xs px-2 py-1.5 border border-border rounded-md w-28 focus:outline-none focus:border-accent-gold/50" />
+              <button
+                onClick={() => { if (customStart && customEnd) { setRange({ type: 'custom', start: customStart, end: customEnd }); setShowCustom(false); } }}
+                className="btn-primary text-xs py-1.5 px-2.5"
+                disabled={!customStart || !customEnd}
+              >
+                Go
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
