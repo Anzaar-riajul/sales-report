@@ -23,6 +23,28 @@ export async function getReportByDate(dateString) {
   return { id: docSnap.id, ...docSnap.data() };
 }
 
+// Helper function to parse Bengali/English date strings
+function parseFlexibleDate(dateString) {
+  if (!dateString) return new Date();
+  
+  // Extract just the date part (e.g., "08 June, 2026" from "08 June, 2026 (Monday)")
+  const dateMatch = dateString.match(/(\d{1,2})\s+(\w+),?\s+(\d{4})/);
+  if (!dateMatch) return new Date(); // Fallback
+  
+  const [, day, month, year] = dateMatch;
+  
+  // Month mapping (English & Bengali)
+  const monthMap = {
+    'January': 0, 'February': 1, 'March': 2, 'April': 3, 'May': 4, 'June': 5,
+    'July': 6, 'August': 7, 'September': 8, 'October': 9, 'November': 10, 'December': 11,
+    'জানুয়ারি': 0, 'ফেব্রুয়ারি': 1, 'মার্চ': 2, 'এপ্রিল': 3, 'মে': 4, 'জুন': 5,
+    'জুলাই': 6, 'আগস্ট': 7, 'সেপ্টেম্বর': 8, 'অক্টোবর': 9, 'নভেম্বর': 10, 'ডিসেম্বর': 11,
+  };
+  
+  const monthIndex = monthMap[month] ?? 0;
+  return new Date(parseInt(year), monthIndex, parseInt(day));
+}
+
 export async function saveReport(parsedData, existingId = null) {
   if (!cachedCategoryMappings) {
     cachedCategoryMappings = await getCategoryMappings();
@@ -61,24 +83,29 @@ export async function saveReport(parsedData, existingId = null) {
 
   batch.set(reportRef, reportData, { merge: !!existingId });
 
-  const dateTimestamp = Timestamp.fromDate(new Date(parsedData.dateString + 'T00:00:00'));
+  // ✅ FIX: Use parseFlexibleDate to handle Bengali/English date strings correctly
+  const dateTimestamp = Timestamp.fromDate(parseFlexibleDate(parsedData.dateString));
 
   for (const product of products) {
     const productRef = doc(db, PRODUCTS_COLLECTION, product.name);
-    // merge:true so firstSeenDate is only written on creation (won't overwrite existing)
     batch.set(productRef, {
       name: product.name,
       category: product.category,
-      totalQuantitySold: increment(product.quantity),  // ⚡ atomic, no read needed
-      totalAppearances: increment(1),                  // ⚡ atomic, no read needed
+      totalQuantitySold: increment(product.quantity),
+      totalAppearances: increment(1),
       lastSeenDate: dateTimestamp,
       firstSeenDate: dateTimestamp,
       dailyHistory: arrayUnion({ date: parsedData.dateString, quantity: product.quantity }),
     }, { merge: true });
   }
 
-  await batch.commit();
-  return { id: existingId || reportRef.id, isUpdate: !!existingId };
+  try {
+    await batch.commit();
+    return { id: existingId || reportRef.id, isUpdate: !!existingId };
+  } catch (error) {
+    console.error('Save Report Error:', error);
+    throw new Error(`Failed to save report: ${error.message}`);
+  }
 }
 
 export async function getProducts() {
