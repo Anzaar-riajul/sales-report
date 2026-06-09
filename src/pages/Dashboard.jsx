@@ -16,6 +16,8 @@ import RollingAvgChart from '../components/Dashboard/RollingAvgChart';
 import DailyReport from '../components/Reports/DailyReport';
 import WeeklyReport from '../components/Reports/WeeklyReport';
 import MonthlyReport from '../components/Reports/MonthlyReport';
+import ProductIntelligence from '../components/Dashboard/ProductIntelligence';
+import DailySummaryReport from '../components/Dashboard/DailySummaryReport';
 import Alert from '../components/UI/Alert';
 import Card from '../components/UI/Card';
 import { CardSkeleton } from '../components/UI/Loader';
@@ -93,20 +95,23 @@ export default function Dashboard() {
           <h2 className="font-display text-2xl text-text-primary">Dashboard</h2>
           <p className="text-xs text-text-muted mt-0.5">{filteredReports.length} reports · Last {timeRange === 'all' ? 'all time' : `${timeRange} days`}</p>
         </div>
-        <div className="flex gap-1.5 bg-bg-card/50 p-1 rounded-lg border border-border self-start">
-          {RANGES.map(r => (
-            <button
-              key={r.value}
-              onClick={() => setTimeRange(r.value)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-                timeRange === r.value
-                  ? 'bg-accent-gold/15 text-accent-gold border border-accent-gold/20 shadow-sm'
-                  : 'text-text-muted hover:text-text-primary'
-              }`}
-            >
-              {r.label}
-            </button>
-          ))}
+        <div className="flex items-center gap-3">
+          <DailySummaryReport latestReport={latestReport} reports={sortedReports} products={products} />
+          <div className="flex gap-1.5 bg-bg-card/50 p-1 rounded-lg border border-border">
+            {RANGES.map(r => (
+              <button
+                key={r.value}
+                onClick={() => setTimeRange(r.value)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                  timeRange === r.value
+                    ? 'bg-accent-gold/15 text-accent-gold border border-accent-gold/20 shadow-sm'
+                    : 'text-text-muted hover:text-text-primary'
+                }`}
+              >
+                {r.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -161,7 +166,13 @@ export default function Dashboard() {
       {/* Comparison Cards */}
       <ComparisonCards reports={sortedReports} loading={reportsLoading} />
 
-      {/* Row 5: Top Products - full width */}
+      {/* Product Intelligence */}
+      <div>
+        <h3 className="font-display text-lg text-text-primary mb-4">🧠 Stock Intelligence</h3>
+        <ProductIntelligence products={products} reports={sortedReports} />
+      </div>
+
+      {/* Top Products - full width */}
       <TopProductsTable products={latestReport?.products || []} loading={reportsLoading} />
     </div>
   );
