@@ -354,6 +354,8 @@ export default function DynamicKPIs({ reports, allReports }) {
     ? Math.round((aggregate.customizeOrder / aggregate.totalOrder) * 100) : 0;
   const prevAvgOrderValue = prevAggregate?.totalOrder > 0
     ? Math.round(prevAggregate.totalOrderValue / prevAggregate.totalOrder) : 0;
+  const prevCustomizeRate = prevAggregate?.totalOrder > 0
+    ? Math.round((prevAggregate.customizeOrder / prevAggregate.totalOrder) * 100) : null;
   const advanceRate = aggregate.totalOrderValue > 0
     ? Math.round((aggregate.totalAdvance / aggregate.totalOrderValue) * 100) : 0;
 
@@ -395,8 +397,7 @@ export default function DynamicKPIs({ reports, allReports }) {
       value: `${customizeRate}%`,
       valueDisplay: `${customizeRate}%`,
       sub: `${formatNumber(aggregate.customizeOrder)} of ${formatNumber(aggregate.totalOrder)} orders`,
-      change: prevAggregate?.totalOrder > 0
-        ? Math.round(customizeRate - Math.round((prevAggregate.customizeOrder / prevAggregate.totalOrder) * 100)) : null,
+      change: pctChange(customizeRate, prevCustomizeRate),
       progress: customizeRate,
       progressLabel: 'Customize rate',
     },
