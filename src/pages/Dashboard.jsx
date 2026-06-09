@@ -52,7 +52,7 @@ function Section({ title, subtitle, count, defaultOpen = true, children, icon })
         )}
       </summary>
 
-      <div className="pl-0 sm:pl-10 pb-1">
+      <div className="pb-1">
         {children}
       </div>
     </details>
@@ -128,10 +128,10 @@ export default function Dashboard() {
   if (reportsLoading) {
     return (
       <div className="space-y-5 animate-fade-in">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1.5 sm:gap-2">
           {Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)}
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5 sm:gap-3">
           {Array.from({ length: 4 }).map((_, i) => <ChartSkeleton key={i} />)}
         </div>
       </div>
@@ -156,10 +156,10 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-5 animate-fade-in">
+    <div className="space-y-3 sm:space-y-4 animate-fade-in">
 
       {/* ─── FILTER BAR — merged with layout header ─── */}
-      <div className="-mt-4 sm:-mt-6 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2.5 bg-white/95 backdrop-blur-sm border-b border-border/80 flex items-center justify-between gap-2">
+      <div className="-mt-4 sm:-mt-6 -mx-2 sm:-mx-3 px-2 sm:px-3 py-2.5 bg-white/95 backdrop-blur-sm border-b border-border/80 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="flex items-center gap-2">
             <div className="hidden sm:flex w-6 h-6 rounded-lg bg-gradient-to-br from-accent-gold/15 to-accent-gold/5 border border-accent-gold/20 items-center justify-center flex-shrink-0">
@@ -200,7 +200,7 @@ export default function Dashboard() {
             </button>
           </div>
           {showCustom && (
-            <div className="flex items-center gap-1 absolute top-full right-4 sm:right-6 mt-1.5 bg-white border border-border rounded-xl p-1.5 shadow-lg z-40 animate-scale-in">
+            <div className="flex items-center gap-1 absolute top-full right-2 sm:right-3 mt-1.5 bg-white border border-border rounded-xl p-1.5 shadow-lg z-40 animate-scale-in">
               <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)}
                 className="text-[10px] sm:text-[11px] px-1.5 py-1 border border-border/60 rounded-md w-22 sm:w-24 focus:outline-none focus:border-accent-gold/50 ring-0" />
               <span className="text-text-muted text-[10px] font-medium">to</span>
@@ -248,7 +248,7 @@ export default function Dashboard() {
         }
         if (visibleAlerts.length === 0) return null;
         return (
-          <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1 animate-fade-in">
+          <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-none -mx-0.5 px-0.5 animate-fade-in">
             {visibleAlerts.map(({ alert, idx }) => (
               <div key={idx} className="flex-shrink-0 min-w-[160px] sm:min-w-[220px] max-w-[220px] sm:max-w-none">
                 <Alert message={alert.message} severity={alert.severity}
@@ -275,8 +275,8 @@ export default function Dashboard() {
 
       {/* ─── REVENUE & ORDERS ─── */}
       <Section title="Revenue & Orders" subtitle="Daily revenue, order types, and breakdown">
-        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-3 sm:p-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2.5 sm:gap-3">
             <div className="lg:col-span-2">
               <RevenueChart reports={filteredReports} loading={reportsLoading} />
             </div>
@@ -290,8 +290,8 @@ export default function Dashboard() {
 
       {/* ─── PERIOD ANALYSIS ─── */}
       <Section title="Period Analysis" subtitle="Weekly, monthly, and yearly summaries">
-        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-3 sm:p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
             <WeeklyReport reports={filteredReports} loading={reportsLoading} />
             <MonthlyReport reports={filteredReports} loading={reportsLoading} />
             <YearlyReport reports={sortedReports} loading={reportsLoading} />
@@ -301,8 +301,8 @@ export default function Dashboard() {
 
       {/* ─── WEEKDAY & CATEGORY ─── */}
       <Section title="Weekday & Category" subtitle="Order patterns by day and product category">
-        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-3 sm:p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
             <WeekdayChart reports={filteredReports} loading={reportsLoading} />
             <CategoryChart products={products} loading={reportsLoading} />
           </div>
@@ -311,28 +311,28 @@ export default function Dashboard() {
 
       {/* ─── STOCK INTELLIGENCE ─── */}
       <Section title="Stock Intelligence" subtitle="Restock recommendations and product health" count={products?.length}>
-        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-3 sm:p-4">
+        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3">
           <ProductIntelligence products={products} reports={sortedReports} />
         </div>
       </Section>
 
       {/* ─── ROLLING & TRENDS ─── */}
       <Section title="Rolling Averages" subtitle="7/14/30-day moving trends">
-        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-3 sm:p-4">
+        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3">
           <RollingAvgChart reports={filteredReports} loading={reportsLoading} />
         </div>
       </Section>
 
       {/* ─── ADVANCED TRENDS ─── */}
       <Section title="Advanced Trends" subtitle="Revenue, AOV, and product velocity over time">
-        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-3 sm:p-4">
+        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3">
           <AdvancedTrends reports={filteredReports} />
         </div>
       </Section>
 
       {/* ─── COMPARISONS ─── */}
       <Section title="Comparisons" subtitle="Week-over-week, month-over-month, same-day">
-        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-3 sm:p-4">
+        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3">
           <ComparisonCards reports={sortedReports} loading={reportsLoading} />
         </div>
       </Section>

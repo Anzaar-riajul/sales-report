@@ -11,7 +11,7 @@ export default function Layout({ children, user }) {
       <Sidebar user={user} />
       <div className="lg:ml-60 pb-16 lg:pb-0">
         <Header latestReport={latestReport} />
-        <main className="p-4 sm:p-6">
+        <main className="px-2 py-4 sm:px-3 sm:py-6">
           {children}
         </main>
       </div>

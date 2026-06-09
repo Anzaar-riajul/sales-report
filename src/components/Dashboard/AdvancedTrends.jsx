@@ -1,192 +1,168 @@
 import { useMemo } from 'react';
-import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { LineChart, Line, BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ComposedChart } from 'recharts';
 import Card from '../UI/Card';
-import ChartWidget from './ChartWidget';
 import { formatBDT, formatDateShort } from '../../utils/formatters';
 
-function CollapsibleSection({ title, defaultOpen = false, children }) {
+function TrendTooltip({ active, payload, label }) {
+  if (!active || !payload?.length) return null;
   return (
-    <details open={defaultOpen} className="group">
-      <summary className="flex items-center gap-2 cursor-pointer text-text-primary font-semibold text-lg mb-3 list-none">
-        <span className="text-xs text-text-muted transition-transform group-open:rotate-90">▶</span>
-        {title}
-      </summary>
-      {children}
-    </details>
+    <div className="bg-white border border-border/60 rounded-xl p-3 shadow-lg min-w-[140px]">
+      <p className="text-[10px] text-text-muted mb-1.5">{label}</p>
+      {payload.map((p, i) => (
+        <p key={i} className="text-xs font-medium" style={{ color: p.color }}>
+          {p.name}: {typeof p.value === 'number' && p.value > 999 ? formatBDT(p.value) : p.value}{p.name?.includes('Rate') || p.name?.includes('%') ? '%' : ''}
+        </p>
+      ))}
+    </div>
   );
 }
 
-function RevenueAdvanceChart({ reports }) {
+function RevenueOverview({ reports }) {
   const data = useMemo(() => {
     return (reports || []).map(r => ({
       date: formatDateShort(r.dateString),
-      revenue: r.totalOrderValue,
-      advance: r.totalAdvance,
+      Revenue: r.totalOrderValue,
+      Advance: r.totalAdvance,
     }));
   }, [reports]);
 
-  return (
-    <ChartWidget title="Revenue & Advance" subtitle="Stacked bar view" loading={false} isEmpty={data.length === 0}>
-      <ResponsiveContainer width="100%" height={260}>
-        <BarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" tick={{ fontSize: 9 }} interval="preserveStartEnd" />
-          <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} />
-          <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }}
-            formatter={(value) => [formatBDT(value), '']}
-          />
-          <Legend formatter={(value) => <span style={{ color: '#0F172A', fontSize: '12px' }}>{value}</span>} />
-          <Bar dataKey="advance" fill="#0D9488" radius={[4, 4, 0, 0]} name="Advance" />
-          <Bar dataKey="revenue" fill="#C9A84C" radius={[4, 4, 0, 0]} name="Revenue" />
-        </BarChart>
-      </ResponsiveContainer>
-    </ChartWidget>
-  );
-}
-
-function AdvanceRateChart({ reports }) {
-  const data = useMemo(() => {
-    return (reports || []).map(r => ({
-      date: formatDateShort(r.dateString),
-      rate: r.advanceRate,
-    }));
-  }, [reports]);
+  if (data.length === 0) return null;
 
   return (
-    <ChartWidget title="Advance Rate Trend" subtitle="Percentage over time" loading={false} isEmpty={data.length === 0}>
+    <Card>
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <p className="text-xs text-text-muted uppercase tracking-wider font-medium">Revenue Overview</p>
+          <p className="text-[10px] text-text-muted/60 mt-0.5">Revenue vs Advance collected</p>
+        </div>
+        <div className="flex gap-3">
+          <span className="flex items-center gap-1 text-[10px] text-text-muted"><span className="w-2 h-2 rounded-full bg-[#C9A84C]" />Revenue</span>
+          <span className="flex items-center gap-1 text-[10px] text-text-muted"><span className="w-2 h-2 rounded-full bg-[#0D9488]" />Advance</span>
+        </div>
+      </div>
       <ResponsiveContainer width="100%" height={220}>
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" tick={{ fontSize: 9 }} interval="preserveStartEnd" />
-          <YAxis tick={{ fontSize: 10 }} domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
-          <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }}
-            formatter={(value) => [`${value}%`, 'Advance Rate']}
-          />
-          <Line type="monotone" dataKey="rate" stroke="#C9A84C" strokeWidth={2} dot={false} name="Advance Rate" />
-        </LineChart>
-      </ResponsiveContainer>
-    </ChartWidget>
-  );
-}
-
-function AOVChart({ reports }) {
-  const data = useMemo(() => {
-    return (reports || []).map(r => ({
-      date: formatDateShort(r.dateString),
-      aov: r.avgOrderValue || 0,
-    }));
-  }, [reports]);
-
-  return (
-    <ChartWidget title="Average Order Value" subtitle="Revenue ÷ Orders per day" loading={false} isEmpty={data.length === 0}>
-      <ResponsiveContainer width="100%" height={220}>
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" tick={{ fontSize: 9 }} interval="preserveStartEnd" />
-          <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} />
-          <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }}
-            formatter={(value) => [formatBDT(value), 'AOV']}
-          />
-          <Line type="monotone" dataKey="aov" stroke="#0D9488" strokeWidth={2} dot={false} name="AOV" />
-        </LineChart>
-      </ResponsiveContainer>
-    </ChartWidget>
-  );
-}
-
-function OrderTrendChart({ reports }) {
-  const data = useMemo(() => {
-    return (reports || []).map(r => ({
-      date: formatDateShort(r.dateString),
-      regular: r.regularOrder,
-      customize: r.customizeOrder,
-    }));
-  }, [reports]);
-
-  return (
-    <ChartWidget title="Order Trend" subtitle="Regular vs Customize (stacked area)" loading={false} isEmpty={data.length === 0}>
-      <ResponsiveContainer width="100%" height={260}>
         <AreaChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" tick={{ fontSize: 9 }} interval="preserveStartEnd" />
-          <YAxis tick={{ fontSize: 10 }} />
-          <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }} />
-          <Legend formatter={(value) => <span style={{ color: '#0F172A', fontSize: '12px' }}>{value}</span>} />
-          <Area type="monotone" dataKey="regular" stackId="1" stroke="#C9A84C" fill="#C9A84C" fillOpacity={0.2} name="Regular" />
-          <Area type="monotone" dataKey="customize" stackId="1" stroke="#0D9488" fill="#0D9488" fillOpacity={0.2} name="Customize" />
+          <defs>
+            <linearGradient id="gradRev" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#C9A84C" stopOpacity={0.3} />
+              <stop offset="100%" stopColor="#C9A84C" stopOpacity={0.02} />
+            </linearGradient>
+            <linearGradient id="gradAdv" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#0D9488" stopOpacity={0.3} />
+              <stop offset="100%" stopColor="#0D9488" stopOpacity={0.02} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" strokeOpacity={0.5} />
+          <XAxis dataKey="date" tick={{ fontSize: 9, fill: '#64748B' }} interval="preserveStartEnd" axisLine={false} tickLine={false} />
+          <YAxis tick={{ fontSize: 9, fill: '#64748B' }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} axisLine={false} tickLine={false} width={40} />
+          <Tooltip content={<TrendTooltip />} />
+          <Area type="monotone" dataKey="Revenue" stroke="#C9A84C" strokeWidth={2} fill="url(#gradRev)" dot={false} />
+          <Area type="monotone" dataKey="Advance" stroke="#0D9488" strokeWidth={2} fill="url(#gradAdv)" dot={false} />
         </AreaChart>
       </ResponsiveContainer>
-    </ChartWidget>
+    </Card>
   );
 }
 
-function CustomizePctChart({ reports }) {
+function OrderMix({ reports }) {
+  const data = useMemo(() => {
+    return (reports || []).map(r => ({
+      date: formatDateShort(r.dateString),
+      Regular: r.regularOrder || 0,
+      Customize: r.customizeOrder || 0,
+      'Custom %': r.totalOrder > 0 ? Math.round((r.customizeOrder / r.totalOrder) * 100) : 0,
+    }));
+  }, [reports]);
+
+  if (data.length === 0) return null;
+
+  return (
+    <Card>
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <p className="text-xs text-text-muted uppercase tracking-wider font-medium">Order Mix</p>
+          <p className="text-[10px] text-text-muted/60 mt-0.5">Regular vs Customize orders</p>
+        </div>
+        <div className="flex gap-3">
+          <span className="flex items-center gap-1 text-[10px] text-text-muted"><span className="w-2 h-2 rounded-full bg-[#C9A84C]" />Regular</span>
+          <span className="flex items-center gap-1 text-[10px] text-text-muted"><span className="w-2 h-2 rounded-full bg-[#E11D48]" />Customize</span>
+        </div>
+      </div>
+      <ResponsiveContainer width="100%" height={220}>
+        <ComposedChart data={data}>
+          <defs>
+            <linearGradient id="gradRegular" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#C9A84C" stopOpacity={0.4} />
+              <stop offset="100%" stopColor="#C9A84C" stopOpacity={0.02} />
+            </linearGradient>
+            <linearGradient id="gradCustom" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#E11D48" stopOpacity={0.4} />
+              <stop offset="100%" stopColor="#E11D48" stopOpacity={0.02} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" strokeOpacity={0.5} />
+          <XAxis dataKey="date" tick={{ fontSize: 9, fill: '#64748B' }} interval="preserveStartEnd" axisLine={false} tickLine={false} />
+          <YAxis yAxisId="left" tick={{ fontSize: 9, fill: '#64748B' }} axisLine={false} tickLine={false} width={30} />
+          <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 9, fill: '#E11D48' }} domain={[0, 100]} tickFormatter={(v) => `${v}%`} axisLine={false} tickLine={false} width={35} />
+          <Tooltip content={<TrendTooltip />} />
+          <Area yAxisId="left" type="monotone" dataKey="Regular" stroke="#C9A84C" strokeWidth={2} fill="url(#gradRegular)" />
+          <Area yAxisId="left" type="monotone" dataKey="Customize" stroke="#E11D48" strokeWidth={2} fill="url(#gradCustom)" />
+          <Line yAxisId="right" type="monotone" dataKey="Custom %" stroke="#E11D48" strokeWidth={1.5} strokeDasharray="4 3" dot={false} />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </Card>
+  );
+}
+
+function PerformanceMetrics({ reports }) {
   const data = useMemo(() => {
     return (reports || []).filter(r => r.totalOrder > 0).map(r => ({
       date: formatDateShort(r.dateString),
-      pct: Math.round((r.customizeOrder / r.totalOrder) * 100),
+      AOV: r.avgOrderValue || Math.round(r.totalOrderValue / r.totalOrder),
+      'Advance %': r.advanceRate || 0,
+      'Rev/Product': r.totalProduct > 0 ? Math.round(r.totalOrderValue / r.totalProduct) : 0,
     }));
   }, [reports]);
 
-  return (
-    <ChartWidget title="Customize % Trend" subtitle="Share of customize orders over time" loading={false} isEmpty={data.length === 0}>
-      <ResponsiveContainer width="100%" height={220}>
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" tick={{ fontSize: 9 }} interval="preserveStartEnd" />
-          <YAxis tick={{ fontSize: 10 }} domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
-          <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }}
-            formatter={(value) => [`${value}%`, 'Customize %']}
-          />
-          <Line type="monotone" dataKey="pct" stroke="#E11D48" strokeWidth={2} dot={false} name="Customize %" />
-        </LineChart>
-      </ResponsiveContainer>
-    </ChartWidget>
-  );
-}
-
-function RevenuePerProductChart({ reports }) {
-  const data = useMemo(() => {
-    return (reports || []).filter(r => r.totalProduct > 0).map(r => ({
-      date: formatDateShort(r.dateString),
-      value: Math.round(r.totalOrderValue / r.totalProduct),
-    }));
-  }, [reports]);
+  if (data.length === 0) return null;
 
   return (
-    <ChartWidget title="Revenue per Product" subtitle="Average revenue per product sold" loading={false} isEmpty={data.length === 0}>
+    <Card>
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <p className="text-xs text-text-muted uppercase tracking-wider font-medium">Performance</p>
+          <p className="text-[10px] text-text-muted/60 mt-0.5">AOV, advance rate, revenue per product</p>
+        </div>
+        <div className="flex gap-3">
+          <span className="flex items-center gap-1 text-[10px] text-text-muted"><span className="w-2 h-2 rounded-full bg-blue-500" />AOV</span>
+          <span className="flex items-center gap-1 text-[10px] text-text-muted"><span className="w-2 h-2 rounded-full bg-accent-gold" />Advance%</span>
+        </div>
+      </div>
       <ResponsiveContainer width="100%" height={220}>
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" tick={{ fontSize: 9 }} interval="preserveStartEnd" />
-          <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v.toFixed(0)}`} />
-          <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }}
-            formatter={(value) => [formatBDT(value), 'Rev/Product']}
-          />
-          <Line type="monotone" dataKey="value" stroke="#C9A84C" strokeWidth={2} dot={false} name="Rev/Product" />
-        </LineChart>
+        <ComposedChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" strokeOpacity={0.5} />
+          <XAxis dataKey="date" tick={{ fontSize: 9, fill: '#64748B' }} interval="preserveStartEnd" axisLine={false} tickLine={false} />
+          <YAxis yAxisId="left" tick={{ fontSize: 9, fill: '#64748B' }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} axisLine={false} tickLine={false} width={40} />
+          <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 9, fill: '#C9A84C' }} domain={[0, 100]} tickFormatter={(v) => `${v}%`} axisLine={false} tickLine={false} width={35} />
+          <Tooltip content={<TrendTooltip />} />
+          <Bar yAxisId="left" dataKey="AOV" fill="#3B82F6" fillOpacity={0.7} radius={[3, 3, 0, 0]} barSize={12} />
+          <Line yAxisId="right" type="monotone" dataKey="Advance %" stroke="#C9A84C" strokeWidth={2} dot={false} />
+        </ComposedChart>
       </ResponsiveContainer>
-    </ChartWidget>
+    </Card>
   );
 }
 
 export default function AdvancedTrends({ reports }) {
-  const hasData = reports && reports.length > 0;
+  if (!reports || reports.length === 0) return null;
 
   return (
-    <CollapsibleSection title="Advanced Trends">
-      <div className="space-y-4">
-        <RevenueAdvanceChart reports={reports} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <AdvanceRateChart reports={reports} />
-          <AOVChart reports={reports} />
-        </div>
-        <OrderTrendChart reports={reports} />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <CustomizePctChart reports={reports} />
-          <RevenuePerProductChart reports={reports} />
-        </div>
+    <div className="space-y-3 sm:space-y-4">
+      <RevenueOverview reports={reports} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+        <OrderMix reports={reports} />
+        <PerformanceMetrics reports={reports} />
       </div>
-    </CollapsibleSection>
+    </div>
   );
 }
