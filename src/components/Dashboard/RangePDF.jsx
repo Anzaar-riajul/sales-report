@@ -132,11 +132,11 @@ export default function RangePDF({ reports, rangeLabel, startDate, endDate }) {
     <div
       id="range-pdf-content"
       style={{
-        width: '375px', maxWidth: '375px',
+        width: '420px', maxWidth: '420px',
         background: T.white,
         fontFamily: "-apple-system, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif",
         color: T.text, padding: '0',
-        position: 'absolute', left: '-9999px', top: 0,
+        position: 'absolute', left: '-9999px', top: 0, overflow: 'visible',
       }}
     >
       {/* Header */}
