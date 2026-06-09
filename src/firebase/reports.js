@@ -9,13 +9,20 @@ const CATEGORY_MAP_DOC = 'productCategoryMap';
 
 let cachedCategoryMappings = null;
 
-async function withRetry(fn, maxRetries = 2) {
+async function withRetry(fn, maxRetries = 1) {
   for (let i = 0; i <= maxRetries; i++) {
     try {
-      return await fn();
+      const result = await Promise.race([
+        fn(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000))
+      ]);
+      return result;
     } catch (err) {
-      if (i === maxRetries) throw err;
-      if (err.code === 'unavailable' || err.code === 'deadline-exceeded' || err.message?.includes('offline')) {
+      if (err.message === 'timeout' && i < maxRetries) {
+        await new Promise(r => setTimeout(r, 500));
+        continue;
+      }
+      if ((err.code === 'unavailable' || err.code === 'deadline-exceeded' || err.message?.includes('offline')) && i < maxRetries) {
         await new Promise(r => setTimeout(r, 1000 * (i + 1)));
         continue;
       }
@@ -70,14 +77,12 @@ function parseFlexibleDate(dateString) {
 }
 
 export async function saveReport(parsedData, existingId = null) {
-  if (!cachedCategoryMappings) {
-    cachedCategoryMappings = await withRetry(() => getCategoryMappings());
-  }
+  const mappings = await getCategoryMappings();
 
   const products = parsedData.products.map(p => ({
     name: p.name,
     quantity: p.quantity || 0,
-    category: cachedCategoryMappings[p.name] || categorizeProduct(p.name),
+    category: mappings[p.name] || categorizeProduct(p.name),
   }));
 
   const reportData = {
@@ -165,9 +170,15 @@ export async function saveCategoryMapping(productName, category) {
 }
 
 export async function getCategoryMappings() {
-  const ref = doc(db, CATEGORY_MAP_COLLECTION, CATEGORY_MAP_DOC);
-  const snap = await getDoc(ref);
-  const mappings = snap.exists() ? (snap.data().mappings || {}) : {};
-  cachedCategoryMappings = mappings;
-  return mappings;
+  if (cachedCategoryMappings) return cachedCategoryMappings;
+  try {
+    const ref = doc(db, CATEGORY_MAP_COLLECTION, CATEGORY_MAP_DOC);
+    const snap = await getDoc(ref);
+    const mappings = snap.exists() ? (snap.data().mappings || {}) : {};
+    cachedCategoryMappings = mappings;
+    return mappings;
+  } catch {
+    // Firestore unavailable — save still works, just no auto-categorization
+    return cachedCategoryMappings || {};
+  }
 }
