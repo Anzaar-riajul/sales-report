@@ -1,4 +1,4 @@
-import { collection, query, orderBy, getDocs, doc, getDoc, Timestamp, writeBatch, where } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, doc, getDoc, updateDoc, Timestamp, writeBatch, where } from 'firebase/firestore';
 import { db } from './config';
 import { categorizeProduct } from '../utils/categorize';
 
@@ -108,4 +108,9 @@ export async function getProducts() {
 export async function getReportCount() {
   const snapshot = await getDocs(collection(db, REPORTS_COLLECTION));
   return snapshot.size;
+}
+
+export async function updateProductCategory(productName, newCategory) {
+  const ref = doc(db, PRODUCTS_COLLECTION, productName);
+  await updateDoc(ref, { category: newCategory });
 }
