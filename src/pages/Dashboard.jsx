@@ -16,7 +16,6 @@ import ProductIntelligence from '../components/Dashboard/ProductIntelligence';
 import AdvancedTrends from '../components/Dashboard/AdvancedTrends';
 import YearlyReport from '../components/Dashboard/YearlyReport';
 import ProductsOverview from '../components/Dashboard/ProductsOverview';
-import ReportHistory from '../components/Dashboard/ReportHistory';
 import DailyReport from '../components/Reports/DailyReport';
 import WeeklyReport from '../components/Reports/WeeklyReport';
 import MonthlyReport from '../components/Reports/MonthlyReport';
@@ -306,10 +305,6 @@ export default function Dashboard() {
         <ComparisonCards reports={sortedReports} loading={reportsLoading} />
       </Section>
 
-      {/* ─── REPORT HISTORY ─── */}
-      <Section title="Report History" subtitle={`All ${sortedReports.length} reports`} defaultOpen={false}>
-        <ReportHistory reports={sortedReports} loading={reportsLoading} />
-      </Section>
     </div>
   );
 }

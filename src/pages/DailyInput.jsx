@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useReports } from '../hooks/useReports';
 import ReportPasteBox from '../components/Input/ReportPasteBox';
 import { motion, AnimatePresence } from 'framer-motion';
+import ReportHistory from '../components/Dashboard/ReportHistory';
 
 function SuccessToast({ message, onDismiss }) {
   useEffect(() => {
@@ -37,7 +38,7 @@ function SuccessToast({ message, onDismiss }) {
 }
 
 export default function DailyInput() {
-  const { addReport, getReportByDateString, reports } = useReports();
+  const { addReport, getReportByDateString, reports, loading } = useReports();
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState(null);
   const [existingReport, setExistingReport] = useState(null);
@@ -98,6 +99,10 @@ export default function DailyInput() {
         saving={saving}
         clearTrigger={clearTrigger.current}
       />
+
+      <div className="pt-2">
+        <ReportHistory reports={reports || []} loading={loading} />
+      </div>
     </div>
   );
 }
