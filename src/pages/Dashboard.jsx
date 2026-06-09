@@ -189,7 +189,7 @@ export default function Dashboard() {
       )}
 
       {/* ═══ KPI CARDS ═══ */}
-      <DynamicKPIs latestReport={latestReport} previousReport={previousReport} />
+      <DynamicKPIs reports={filteredReports} allReports={sortedReports} />
 
       {/* ═══ REVENUE & ORDERS ═══ */}
       <CollapsibleSection title="Revenue & Orders">
