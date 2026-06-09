@@ -28,8 +28,14 @@ export default function Login({ loading }) {
       console.error('Google Login failed:', err);
       if (err.code === 'auth/popup-closed-by-user') {
         setError('Login cancelled. Please complete the sign-in process.');
+      } else if (err.code === 'auth/unauthorized-domain') {
+        setError('Unauthorized domain. Add "' + window.location.hostname + '" to Firebase Auth authorized domains.');
+      } else if (err.code === 'auth/operation-not-allowed') {
+        setError('Google Sign-In is not enabled. Enable it in Firebase Console → Authentication → Sign-in method.');
+      } else if (err.code === 'auth/popup-blocked') {
+        setError('Popup blocked. Allow popups for this site and try again.');
       } else {
-        setError('Failed to sign in with Google. Please try again.');
+        setError('Error: ' + (err.code || err.message || 'Unknown error'));
       }
       setIsProcessing(false);
     }
