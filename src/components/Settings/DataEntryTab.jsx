@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import ReportPasteBox from '../Input/ReportPasteBox';
 import ReportHistory from '../Dashboard/ReportHistory';
 import { parseCSV, downloadCSVTemplate } from '../../utils/csvParser';
+import { batchParsePaste } from '../../utils/parser';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function SuccessToast({ message, onDismiss }) {
@@ -51,6 +52,14 @@ export default function DataEntryTab() {
   const [csvStatus, setCsvStatus] = useState(null);
   const [csvImporting, setCsvImporting] = useState(false);
   const [csvResults, setCsvResults] = useState(null);
+
+  const [batchText, setBatchText] = useState('');
+  const [batchParsed, setBatchParsed] = useState(null);
+  const [batchImporting, setBatchImporting] = useState(false);
+  const [batchStatus, setBatchStatus] = useState(null);
+  const [batchSelected, setBatchSelected] = useState({});
+  const [batchExistence, setBatchExistence] = useState({});
+  const [batchProgress, setBatchProgress] = useState({ imported: 0, failed: 0 });
 
   const handlePreview = useCallback(async (parsed) => {
     setStep(1);
@@ -150,6 +159,74 @@ export default function DataEntryTab() {
     setSuccessMsg(`${imported} reports imported from CSV!`);
   }, [csvResults, addReport, getReportByDateString]);
 
+  const handleBatchParse = useCallback(async () => {
+    if (!batchText.trim()) return;
+    setBatchStatus('parsing');
+    setBatchImporting(false);
+    const parsed = batchParsePaste(batchText);
+    if (parsed.length === 0) {
+      setBatchStatus('empty');
+      setBatchParsed([]);
+      return;
+    }
+    const exists = {};
+    const selected = {};
+    for (const report of parsed) {
+      const existing = await getReportByDateString(report.dateString);
+      exists[report.dateString] = !!existing;
+      selected[report.dateString] = !existing;
+    }
+    setBatchExistence(exists);
+    setBatchSelected(selected);
+    setBatchParsed(parsed);
+    setBatchStatus('preview');
+  }, [batchText, getReportByDateString]);
+
+  const toggleBatchSelect = useCallback((dateString) => {
+    setBatchSelected(prev => ({ ...prev, [dateString]: !prev[dateString] }));
+  }, []);
+
+  const toggleBatchSelectAll = useCallback(() => {
+    if (!batchParsed) return;
+    const allSelected = batchParsed.every(r => batchSelected[r.dateString]);
+    const newSelected = {};
+    for (const r of batchParsed) {
+      newSelected[r.dateString] = !allSelected;
+    }
+    setBatchSelected(newSelected);
+  }, [batchParsed, batchSelected]);
+
+  const handleBatchImport = useCallback(async () => {
+    if (!batchParsed) return;
+    const toImport = batchParsed.filter(r => batchSelected[r.dateString]);
+    if (toImport.length === 0) return;
+
+    setBatchImporting(true);
+    setBatchProgress({ imported: 0, failed: 0 });
+    const total = toImport.length;
+    let importedCount = 0;
+    let failedCount = 0;
+
+    for (let i = 0; i < total; i++) {
+      const report = toImport[i];
+      try {
+        const existing = batchExistence[report.dateString]
+          ? await getReportByDateString(report.dateString)
+          : null;
+        await addReport(report, existing?.id || null);
+        importedCount++;
+        setBatchProgress({ imported: importedCount, failed: failedCount });
+      } catch {
+        failedCount++;
+        setBatchProgress({ imported: importedCount, failed: failedCount });
+      }
+    }
+
+    setBatchStatus('done');
+    setBatchImporting(false);
+    setSuccessMsg(`${importedCount} reports imported from batch paste!`);
+  }, [batchParsed, batchSelected, batchExistence, addReport, getReportByDateString]);
+
   const hasEntryAccess = isSuperAdmin;
 
   return (
@@ -239,6 +316,128 @@ export default function DataEntryTab() {
                 {csvResults.errors.map((err, i) => (
                   <p key={i} className="text-[10px] text-accent-rose font-mono">{err}</p>
                 ))}
+              </div>
+            )}
+          </div>
+
+          {/* Batch Paste Import */}
+          <div className="bg-white/80 border border-border/30 rounded-2xl p-4">
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-accent-teal/15 to-accent-teal/5 border border-accent-teal/20 flex items-center justify-center">
+                <svg className="w-4 h-4 text-accent-teal" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-text-primary">Batch Paste Import</p>
+                <p className="text-[9px] text-text-muted">Paste multiple reports at once — auto-detects each daily report</p>
+              </div>
+            </div>
+
+            {batchStatus !== 'preview' && batchStatus !== 'done' && (
+              <>
+                <textarea
+                  value={batchText}
+                  onChange={(e) => setBatchText(e.target.value)}
+                  placeholder="Paste your reports here... (supports the same format as individual paste, with multiple days separated by date headers)"
+                  rows={6}
+                  className="w-full px-3 py-2.5 text-[11px] font-mono bg-bg-elevated/40 border border-border/30 rounded-xl resize-y focus:outline-none focus:ring-2 focus:ring-accent-teal/30 focus:border-accent-teal/30 transition-all placeholder:text-text-muted/50"
+                />
+                <div className="flex items-center gap-2 mt-2.5">
+                  <button onClick={handleBatchParse}
+                    className="px-4 py-2 bg-gradient-to-r from-accent-teal to-emerald-500 text-white text-[11px] font-bold rounded-lg shadow-lg shadow-accent-teal/25 hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-40 flex items-center gap-1.5">
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="9 11 12 14 22 4" /><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+                    </svg>
+                    Parse Reports
+                  </button>
+                  {batchStatus === 'empty' && (
+                    <span className="text-[10px] text-accent-rose">No valid reports found</span>
+                  )}
+                  {batchText && (
+                    <button onClick={() => { setBatchText(''); setBatchStatus(null); setBatchParsed(null); }}
+                      className="text-[10px] text-text-muted hover:text-text-primary px-2 py-1 transition-colors">
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+
+            {batchStatus === 'preview' && batchParsed && (
+              <div className="mt-3 bg-bg-elevated/40 rounded-xl p-3">
+                <div className="flex items-center justify-between mb-2.5">
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs font-semibold text-text-primary">
+                      {batchParsed.length} reports detected
+                    </p>
+                    <button onClick={toggleBatchSelectAll}
+                      className="text-[9px] px-1.5 py-0.5 rounded bg-bg-elevated border border-border/30 text-text-muted hover:text-text-primary transition-colors">
+                      {batchParsed.every(r => batchSelected[r.dateString]) ? 'Deselect All' : 'Select All'}
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => { setBatchStatus(null); setBatchParsed(null); setBatchText(''); }}
+                      className="px-2.5 py-1.5 text-[10px] text-text-muted hover:text-text-primary border border-border/30 rounded-lg transition-colors">
+                      Back
+                    </button>
+                    <button onClick={handleBatchImport} disabled={batchImporting || !batchParsed.some(r => batchSelected[r.dateString])}
+                      className="px-4 py-2 bg-gradient-to-r from-accent-teal to-emerald-500 text-white text-[11px] font-bold rounded-lg shadow-lg shadow-accent-teal/25 hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-40 flex items-center gap-1.5">
+                      {batchImporting ? (
+                        <><svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg> Importing... {batchParsed.filter(r => batchSelected[r.dateString]).length - (batchImporting ? 0 : 0)}</>
+                      ) : `Import Selected (${batchParsed.filter(r => batchSelected[r.dateString]).length})`}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="max-h-48 overflow-y-auto space-y-1">
+                  {batchParsed.map((report, i) => {
+                    const exists = batchExistence[report.dateString];
+                    const checked = batchSelected[report.dateString];
+                    return (
+                      <label key={report.dateString || i}
+                        className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg cursor-pointer transition-all ${
+                          checked ? 'bg-accent-teal/5 border border-accent-teal/15' : 'bg-transparent border border-transparent hover:bg-bg-elevated/40'
+                        } ${exists ? 'opacity-50' : ''}`}>
+                        <input
+                          type="checkbox"
+                          checked={!!checked}
+                          onChange={() => toggleBatchSelect(report.dateString)}
+                          className="w-3.5 h-3.5 rounded border-border/40 text-accent-teal focus:ring-accent-teal/30 accent-accent-teal cursor-pointer"
+                        />
+                        <span className="text-[10px] font-mono text-text-muted w-16 flex-shrink-0">{report.dateString}</span>
+                        <span className="text-[10px] text-text-primary flex-1">
+                          O:{report.totalOrder} P:{report.totalProduct} ৳{report.totalOrderValue?.toLocaleString()}
+                        </span>
+                        {exists && (
+                          <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-accent-gold/10 text-accent-gold border border-accent-gold/15 flex-shrink-0">exists</span>
+                        )}
+                      </label>
+                    );
+                  })}
+                </div>
+
+                {batchImporting && (
+                  <div className="mt-2.5">
+                    <div className="flex justify-between text-[9px] text-text-muted mb-1">
+                      <span>
+                        {batchProgress.imported} / {batchParsed.filter(r => batchSelected[r.dateString]).length} imported
+                        {batchProgress.failed > 0 && ` (${batchProgress.failed} failed)`}
+                      </span>
+                      <span>{Math.round((batchProgress.imported / Math.max(1, batchParsed.filter(r => batchSelected[r.dateString]).length)) * 100)}%</span>
+                    </div>
+                    <div className="h-1.5 bg-bg-elevated rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-accent-teal to-emerald-400 rounded-full transition-all duration-300"
+                        style={{ width: `${Math.round((batchProgress.imported / Math.max(1, batchParsed.filter(r => batchSelected[r.dateString]).length)) * 100)}%` }} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {batchStatus === 'done' && (
+              <div className="mt-3 bg-accent-teal/5 border border-accent-teal/15 rounded-xl p-3 text-center">
+                <p className="text-xs font-semibold text-accent-teal">✓ Batch import complete!</p>
               </div>
             )}
           </div>

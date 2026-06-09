@@ -150,3 +150,49 @@ export function parseReport(rawText) {
     products, rawText
   };
 }
+
+export function batchParsePaste(bulkText) {
+  if (!bulkText || typeof bulkText !== 'string') return [];
+
+  const datePattern = /(?:✿+\s*)?(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})(?:\s*✿+)?/gi;
+  const splits = [];
+  let lastIndex = 0;
+  let lastMatch = null;
+
+  let match;
+  while ((match = datePattern.exec(bulkText)) !== null) {
+    if (lastMatch) {
+      const block = bulkText.slice(lastIndex, match.index).trim();
+      if (block) {
+        const day = lastMatch[1].padStart(2, '0');
+        const monthStr = lastMatch[2].toLowerCase();
+        const year = lastMatch[3];
+        const dateStr = `${year}-${MONTH_MAP[monthStr] || '01'}-${day}`;
+        splits.push({ rawText: block, dateString: dateStr });
+      }
+    }
+    lastIndex = match.index;
+    lastMatch = match;
+  }
+
+  if (lastMatch) {
+    const block = bulkText.slice(lastIndex).trim();
+    if (block) {
+      const day = lastMatch[1].padStart(2, '0');
+      const monthStr = lastMatch[2].toLowerCase();
+      const year = lastMatch[3];
+      const dateStr = `${year}-${MONTH_MAP[monthStr] || '01'}-${day}`;
+      splits.push({ rawText: block, dateString: dateStr });
+    }
+  }
+
+  const results = [];
+  for (const { rawText } of splits) {
+    const parsed = parseReport(rawText);
+    if (parsed.dateString) {
+      results.push(parsed);
+    }
+  }
+
+  return results;
+}
