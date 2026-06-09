@@ -5,12 +5,13 @@ export async function generateReportPDF(report, elementId, filename) {
   const element = document.getElementById(elementId);
   if (!element) throw new Error('PDF element not found');
 
+  // Phone-view width (400px) for readable mobile-style layout
   const canvas = await html2canvas(element, {
     scale: 2,
     useCORS: true,
     logging: false,
     backgroundColor: '#FFFFFF',
-    windowWidth: 800,
+    windowWidth: 400,
   });
 
   const imgData = canvas.toDataURL('image/png');

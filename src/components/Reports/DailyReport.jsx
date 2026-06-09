@@ -82,7 +82,7 @@ export default function DailyReport({ reports, loading }) {
       </ResponsiveContainer>
 
       {/* Hidden PDF render */}
-      {latestReport && <ReportPDF report={latestReport} />}
+      {latestReport && <ReportPDF report={latestReport} allReports={reports} />}
     </Card>
   );
 }

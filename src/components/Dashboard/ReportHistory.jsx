@@ -5,7 +5,7 @@ import ReportPDF from './ReportPDF';
 import { generateReportPDF } from '../../utils/pdfGenerator';
 import { formatDate, formatBDTShort, formatBDT, formatNumber, formatPercent } from '../../utils/formatters';
 
-function ReportDetailModal({ report, onClose }) {
+function ReportDetailModal({ report, allReports, onClose }) {
   const [generating, setGenerating] = useState(false);
   const pdfRef = useRef(null);
 
@@ -119,7 +119,7 @@ function ReportDetailModal({ report, onClose }) {
 
       {/* Hidden PDF render */}
       <div ref={pdfRef}>
-        <ReportPDF report={report} />
+        <ReportPDF report={report} allReports={allReports} />
       </div>
     </div>
   );
@@ -205,7 +205,7 @@ export default function ReportHistory({ reports, loading }) {
       </Card>
 
       {selectedReport && (
-        <ReportDetailModal report={selectedReport} onClose={() => setSelectedReport(null)} />
+        <ReportDetailModal report={selectedReport} allReports={reports} onClose={() => setSelectedReport(null)} />
       )}
     </>
   );
