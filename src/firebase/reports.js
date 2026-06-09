@@ -9,9 +9,23 @@ const CATEGORY_MAP_DOC = 'productCategoryMap';
 
 let cachedCategoryMappings = null;
 
+async function withRetry(fn, maxRetries = 2) {
+  for (let i = 0; i <= maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (i === maxRetries) throw err;
+      if (err.code === 'unavailable' || err.code === 'deadline-exceeded' || err.message?.includes('offline')) {
+        await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+
 export async function getReports() {
-  const q = query(collection(db, REPORTS_COLLECTION), orderBy('dateString', 'desc'));
-  const snapshot = await getDocs(q);
+  const snapshot = await withRetry(() => getDocs(query(collection(db, REPORTS_COLLECTION), orderBy('dateString', 'desc'))));
   return snapshot.docs.map(doc => {
     const data = doc.data();
     const { rawText, ...rest } = data;
@@ -27,8 +41,7 @@ export async function getReportRawText(dateString) {
 }
 
 export async function getReportByDate(dateString) {
-  const q = query(collection(db, REPORTS_COLLECTION), where('dateString', '==', dateString));
-  const snapshot = await getDocs(q);
+  const snapshot = await withRetry(() => getDocs(query(collection(db, REPORTS_COLLECTION), where('dateString', '==', dateString))));
   if (snapshot.empty) return null;
   const docSnap = snapshot.docs[0];
   return { id: docSnap.id, ...docSnap.data() };
@@ -58,7 +71,7 @@ function parseFlexibleDate(dateString) {
 
 export async function saveReport(parsedData, existingId = null) {
   if (!cachedCategoryMappings) {
-    cachedCategoryMappings = await getCategoryMappings();
+    cachedCategoryMappings = await withRetry(() => getCategoryMappings());
   }
 
   const products = parsedData.products.map(p => ({
@@ -94,7 +107,6 @@ export async function saveReport(parsedData, existingId = null) {
 
   batch.set(reportRef, reportData, { merge: !!existingId });
 
-  // ✅ FIX: Use parseFlexibleDate to handle Bengali/English date strings correctly
   const dateTimestamp = Timestamp.fromDate(parseFlexibleDate(parsedData.dateString));
 
   for (const product of products) {
@@ -110,13 +122,8 @@ export async function saveReport(parsedData, existingId = null) {
     }, { merge: true });
   }
 
-  try {
-    await batch.commit();
-    return { id: existingId || reportRef.id, isUpdate: !!existingId };
-  } catch (error) {
-    console.error('Save Report Error:', error);
-    throw new Error(`Failed to save report: ${error.message}`);
-  }
+  await withRetry(() => batch.commit());
+  return { id: existingId || reportRef.id, isUpdate: !!existingId };
 }
 
 export async function getProducts() {
