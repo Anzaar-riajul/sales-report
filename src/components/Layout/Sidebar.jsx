@@ -1,0 +1,85 @@
+import { NavLink } from 'react-router-dom';
+import { logout } from '../../firebase/auth';
+
+const navItems = [
+  { path: '/', label: 'Dashboard', icon: '◈' },
+  { path: '/input', label: 'Daily Input', icon: '+' },
+  { path: '/analytics', label: 'Analytics', icon: '◉' },
+  { path: '/products', label: 'Products', icon: '▣' },
+  { path: '/alerts', label: 'Alerts', icon: '▲' },
+  { path: '/settings', label: 'Settings', icon: '⚙' },
+];
+
+export default function Sidebar({ user }) {
+  const handleLogout = async () => {
+    await logout();
+  };
+
+  return (
+    <>
+      <aside className="hidden lg:flex flex-col fixed left-0 top-0 h-screen w-60 bg-bg-card border-r border-border z-40">
+        <div className="p-5 border-b border-border">
+          <h1 className="font-display text-xl text-accent-gold">Anzaar</h1>
+          <p className="text-text-muted text-xs mt-0.5">Islamic Lifestyle</p>
+        </div>
+
+        <nav className="flex-1 py-4 px-3 space-y-1">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              end={item.path === '/'}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 ${
+                  isActive
+                    ? 'bg-accent-gold/10 text-accent-gold border border-accent-gold/20'
+                    : 'text-text-muted hover:text-text-primary hover:bg-bg-elevated'
+                }`
+              }
+            >
+              <span className="text-base">{item.icon}</span>
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="p-4 border-t border-border">
+          <div className="flex items-center gap-3 mb-3">
+            {user?.photoURL ? (
+              <img src={user.photoURL} alt="" className="w-8 h-8 rounded-full" />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-bg-elevated flex items-center justify-center text-xs text-text-muted">
+                {user?.email?.charAt(0).toUpperCase() || 'A'}
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-text-primary truncate">{user?.displayName || 'User'}</p>
+              <p className="text-xs text-text-muted truncate">{user?.email}</p>
+            </div>
+          </div>
+          <button onClick={handleLogout} className="btn-secondary w-full text-xs py-2">
+            Sign Out
+          </button>
+        </div>
+      </aside>
+
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-bg-card border-t border-border z-40 flex justify-around py-2 px-1">
+        {navItems.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            end={item.path === '/'}
+            className={({ isActive }) =>
+              `flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-xs transition-all duration-200 ${
+                isActive ? 'text-accent-gold' : 'text-text-muted'
+              }`
+            }
+          >
+            <span className="text-lg">{item.icon}</span>
+            {item.label}
+          </NavLink>
+        ))}
+      </nav>
+    </>
+  );
+}
