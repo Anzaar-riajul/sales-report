@@ -37,7 +37,7 @@ export function computeAlerts(allReports, allProducts) {
     if (latest.totalOrderValue === maxValue) {
       alerts.push({
         type: 'success',
-        message: `Best revenue day in 30 days! ${format(new Date(latest.dateString), 'MMM dd')} — BDT ${(latest.totalOrderValue / 100000).toFixed(1)}L`,
+        message: `Best revenue day in 30 days! ${format(new Date(latest.dateString), 'MMM dd')} — ৳${(latest.totalOrderValue / 100000).toFixed(1)}L`,
         severity: 'low'
       });
     }

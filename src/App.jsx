@@ -11,6 +11,7 @@ import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
+import Notifications from './pages/Notifications';
 import Alerts from './pages/Alerts';
 import PDFExport from './pages/PDFExport';
 import Loader from './components/UI/Loader';
@@ -125,6 +126,11 @@ export default function App() {
       <Route path="/profile" element={
         <ProtectedRoute user={user} allowed={allowed} loading={loading} role={role}>
           <Profile />
+        </ProtectedRoute>
+      } />
+      <Route path="/notifications" element={
+        <ProtectedRoute user={user} allowed={allowed} loading={loading} role={role}>
+          <Notifications />
         </ProtectedRoute>
       } />
       <Route path="/settings" element={

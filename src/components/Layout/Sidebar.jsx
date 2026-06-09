@@ -6,7 +6,7 @@ const navItems = [
   { path: '/input', label: 'Entry', icon: '+' },
   { path: '/analytics', label: 'Analytics', icon: '◉' },
   { path: '/products', label: 'Products', icon: '▣' },
-  { path: '/alerts', label: 'Alerts', icon: '▲' },
+  { path: '/notifications', label: 'Alerts', icon: '▲' },
   { path: '/export', label: 'Export', icon: '↓' },
 ];
 

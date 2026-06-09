@@ -1,23 +1,23 @@
 import { format, parseISO } from 'date-fns';
 
 export function formatBDT(amount) {
-  if (amount === null || amount === undefined || isNaN(amount)) return 'BDT 0';
+  if (amount === null || amount === undefined || isNaN(amount)) return '৳0';
   const num = Math.round(amount);
   const str = num.toString();
   const last3 = str.slice(-3);
   const rest = str.slice(0, -3);
-  if (rest.length === 0) return `BDT ${last3}`;
+  if (rest.length === 0) return `৳${last3}`;
 
   const formatted = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + ',' + last3;
-  return `BDT ${formatted}`;
+  return `৳${formatted}`;
 }
 
 export function formatBDTShort(amount) {
-  if (amount === null || amount === undefined || isNaN(amount)) return 'BDT 0';
-  if (amount >= 10000000) return `BDT ${(amount / 10000000).toFixed(1)}Cr`;
-  if (amount >= 100000) return `BDT ${(amount / 100000).toFixed(1)}L`;
-  if (amount >= 1000) return `BDT ${(amount / 1000).toFixed(1)}K`;
-  return `BDT ${amount}`;
+  if (amount === null || amount === undefined || isNaN(amount)) return '৳0';
+  if (amount >= 10000000) return `৳${(amount / 10000000).toFixed(1)}Cr`;
+  if (amount >= 100000) return `৳${(amount / 100000).toFixed(1)}L`;
+  if (amount >= 1000) return `৳${(amount / 1000).toFixed(1)}K`;
+  return `৳${amount}`;
 }
 
 export function formatNumber(num) {
