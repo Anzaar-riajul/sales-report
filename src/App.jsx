@@ -25,6 +25,12 @@ function ProtectedRoute({ children, user, allowed, loading }) {
   }
 
   if (!allowed) {
+    const copyUid = () => {
+      if (user?.uid) {
+        navigator.clipboard.writeText(user.uid);
+      }
+    };
+
     return (
       <div className="min-h-screen bg-bg-primary flex items-center justify-center p-4">
         <div className="glass-card p-8 max-w-md w-full text-center">
@@ -33,11 +39,23 @@ function ProtectedRoute({ children, user, allowed, loading }) {
           </div>
           <h2 className="font-display text-xl text-text-primary mb-2">Access Denied</h2>
           <p className="text-text-muted text-sm mb-4">
-            Your account is not authorized to access this dashboard.
+            Your Google account is not in the allowed users list.
           </p>
-          <p className="text-text-muted text-xs">
-            Contact the admin to add your email to the allowed users list.
-          </p>
+          <div className="bg-bg-elevated rounded-lg p-4 border border-border text-left mb-4">
+            <p className="text-xs text-text-muted mb-2">Set up access:</p>
+            <ol className="text-xs text-text-primary space-y-1.5 list-decimal list-inside">
+              <li>Go to <span className="text-accent-gold">Firebase Console → Firestore</span></li>
+              <li>Create collection: <code className="text-accent-gold">config</code></li>
+              <li>Document ID: <code className="text-accent-gold">allowedUsers</code></li>
+              <li>Field: <code className="text-accent-gold">uids</code> (array), add your UID below</li>
+            </ol>
+            <div className="mt-3 pt-3 border-t border-border">
+              <p className="text-xs text-text-muted mb-1">Your UID (click to copy):</p>
+              <button onClick={copyUid} className="font-mono text-xs text-accent-gold bg-bg-primary px-3 py-2 rounded-lg w-full text-left truncate hover:brightness-110">
+                {user?.uid || 'Loading...'}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
