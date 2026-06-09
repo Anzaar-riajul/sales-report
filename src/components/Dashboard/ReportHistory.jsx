@@ -1,13 +1,29 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import Card from '../UI/Card';
 import Badge from '../UI/Badge';
+import ReportPDF from './ReportPDF';
+import { generateReportPDF } from '../../utils/pdfGenerator';
 import { formatDate, formatBDTShort, formatBDT, formatNumber, formatPercent } from '../../utils/formatters';
 
 function ReportDetailModal({ report, onClose }) {
+  const [generating, setGenerating] = useState(false);
+  const pdfRef = useRef(null);
+
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = ''; };
   }, []);
+
+  const handleDownload = useCallback(async () => {
+    setGenerating(true);
+    try {
+      await generateReportPDF(report, 'report-pdf-content', `Anzaar-Report-${report.dateString}.pdf`);
+    } catch (err) {
+      console.error('PDF generation failed:', err);
+    } finally {
+      setGenerating(false);
+    }
+  }, [report]);
 
   const productCount = report.products?.length || 0;
 
@@ -15,7 +31,8 @@ function ReportDetailModal({ report, onClose }) {
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[85vh] overflow-y-auto shadow-2xl animate-slide-up">
-        <div className="sticky top-0 bg-white border-b border-border/60 px-4 sm:px-5 py-3 flex items-center justify-between z-10">
+        {/* Sticky header with PDF button */}
+        <div className="sticky top-0 bg-white/95 backdrop-blur-xl border-b border-border/60 px-4 sm:px-5 py-3 flex items-center justify-between z-10">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-accent-gold/10 border border-accent-gold/20 flex items-center justify-center">
               <span className="text-[10px] text-accent-gold font-semibold">◈</span>
@@ -25,11 +42,30 @@ function ReportDetailModal({ report, onClose }) {
               <p className="text-[10px] text-text-muted">{report.dayOfWeek || ''}</p>
             </div>
           </div>
-          <button onClick={onClose} className="w-7 h-7 rounded-lg hover:bg-bg-elevated flex items-center justify-center transition-colors">
-            <svg className="w-4 h-4 text-text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={handleDownload}
+              disabled={generating}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium text-accent-gold bg-accent-gold/5 hover:bg-accent-gold/10 border border-accent-gold/15 rounded-lg transition-all disabled:opacity-40"
+            >
+              {generating ? (
+                <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              ) : (
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              )}
+              {generating ? 'Generating...' : 'PDF'}
+            </button>
+            <button onClick={onClose} className="w-7 h-7 rounded-lg hover:bg-bg-elevated flex items-center justify-center transition-colors">
+              <svg className="w-4 h-4 text-text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div className="p-4 sm:p-5 space-y-4">
@@ -79,6 +115,11 @@ function ReportDetailModal({ report, onClose }) {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Hidden PDF render */}
+      <div ref={pdfRef}>
+        <ReportPDF report={report} />
       </div>
     </div>
   );
