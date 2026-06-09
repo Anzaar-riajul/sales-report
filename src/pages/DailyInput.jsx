@@ -111,6 +111,7 @@ export default function DailyInput() {
       console.error('Save failed:', err);
       setStep(1);
       setSuccessMsg(null);
+      throw err;
     } finally {
       setSaving(false);
     }
