@@ -154,7 +154,7 @@ export function parseReport(rawText) {
 export function batchParsePaste(bulkText) {
   if (!bulkText || typeof bulkText !== 'string') return [];
 
-  const datePattern = /(?:✿+\s*)?(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})(?:\s*✿+)?/gi;
+  const datePattern = /(?:✿+\s*)?(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December),?\s+(\d{4})(?:\s*✿+)?/gi;
   const splits = [];
   let lastIndex = 0;
   let lastMatch = null;
