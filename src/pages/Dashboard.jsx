@@ -14,6 +14,80 @@ import CategoryChart from '../components/Dashboard/CategoryChart';
 import ComparisonCards from '../components/Dashboard/ComparisonCards';
 import RollingAvgChart from '../components/Dashboard/RollingAvgChart';
 import ProductIntelligence from '../components/Dashboard/ProductIntelligence';
+import { computeHotProducts, computeColdProducts, computeTrendingCategories } from '../utils/productIntelligence';
+
+function StockPreview({ products, reports }) {
+  const hotData = useMemo(() => computeHotProducts(products, reports, 3), [products, reports]);
+  const coldData = useMemo(() => computeColdProducts(products, reports, 3), [products, reports]);
+  const catData = useMemo(() => computeTrendingCategories(products, reports), [products, reports]);
+
+  return (
+    <div className="space-y-2.5">
+      {hotData.length > 0 && (
+        <div className="bg-gradient-to-r from-accent-teal/5 to-accent-teal/10 border border-accent-teal/15 rounded-xl p-2.5">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[10px] font-bold text-accent-teal uppercase">🔥 Need Stock</span>
+            <span className="text-[9px] text-accent-teal bg-accent-teal/10 px-1.5 py-0.5 rounded-full">{hotData.length}</span>
+          </div>
+          <div className="space-y-1">
+            {hotData.map(p => (
+              <div key={p.name} className="flex items-center justify-between">
+                <span className="text-[10px] text-text-primary truncate">{p.name}</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[8px] text-accent-teal bg-accent-teal/10 px-1 py-0.5 rounded">{p.action}</span>
+                  <span className="text-[9px] font-mono text-text-muted">{p.velocity}/d</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {coldData.length > 0 && (
+        <div className="bg-gradient-to-r from-accent-rose/5 to-accent-rose/10 border border-accent-rose/15 rounded-xl p-2.5">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[10px] font-bold text-accent-rose uppercase">❄️ Don't Restock</span>
+            <span className="text-[9px] text-accent-rose bg-accent-rose/10 px-1.5 py-0.5 rounded-full">{coldData.length}</span>
+          </div>
+          <div className="space-y-1">
+            {coldData.map(p => (
+              <div key={p.name} className="flex items-center justify-between">
+                <span className="text-[10px] text-text-primary truncate">{p.name}</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[8px] text-accent-rose bg-accent-rose/10 px-1 py-0.5 rounded">{p.action}</span>
+                  <span className="text-[9px] font-mono text-text-muted">{p.velocity}/d</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {catData.length > 0 && (
+        <div className="bg-bg-elevated/40 border border-border/30 rounded-xl p-2.5">
+          <span className="text-[10px] font-bold text-text-muted uppercase">📊 Categories</span>
+          <div className="mt-1.5 space-y-1">
+            {catData.slice(0, 3).map(c => (
+              <div key={c.name}>
+                <div className="flex items-center justify-between text-[9px] mb-0.5">
+                  <span className="text-text-primary font-medium">{c.name}</span>
+                  <span className="text-text-muted">{c.stockUp}/{c.totalProducts}</span>
+                </div>
+                <div className="h-1.5 bg-bg-elevated rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-accent-teal to-accent-gold rounded-full" style={{ width: `${(c.stockUp / Math.max(c.totalProducts, 1)) * 100}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="text-center pt-1">
+        <span className="text-[9px] text-accent-rose/60">See full analysis →</span>
+      </div>
+    </div>
+  );
+}
 import AdvancedTrends from '../components/Dashboard/AdvancedTrends';
 import YearlyReport from '../components/Dashboard/YearlyReport';
 import ProductsOverview from '../components/Dashboard/ProductsOverview';
@@ -375,19 +449,29 @@ export default function Dashboard() {
         </div>
       </Section>
 
-      {/* ─── PERIOD ANALYSIS ─── */}
-      <Section title="Period Analysis" subtitle="Weekly, monthly, and yearly summaries" onExpand={() => setExpandedSection('Period Analysis')}>
-        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3 cursor-pointer hover:shadow-md hover:border-accent-teal/15 transition-all duration-300 group/card" onClick={() => setExpandedSection('Period Analysis')}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
-            <WeeklyReport reports={filteredReports} loading={reportsLoading} />
-            <MonthlyReport reports={filteredReports} loading={reportsLoading} />
-            <YearlyReport reports={sortedReports} loading={reportsLoading} />
+      {/* ─── PERIOD ANALYSIS + ADVANCED TRENDS ─── */}
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+        <Section title="Period Analysis" subtitle="Weekly, monthly, and yearly summaries" onExpand={() => setExpandedSection('Period Analysis')}>
+          <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3 cursor-pointer hover:shadow-md hover:border-accent-teal/15 transition-all duration-300 group/card" onClick={() => setExpandedSection('Period Analysis')}>
+            <div className="space-y-2.5 sm:space-y-3">
+              <WeeklyReport reports={filteredReports} loading={reportsLoading} />
+              <MonthlyReport reports={filteredReports} loading={reportsLoading} />
+            </div>
+            <div className="text-center mt-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
+              <span className="text-[9px] text-accent-teal/60">tap to expand</span>
+            </div>
           </div>
-          <div className="text-center mt-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
-            <span className="text-[9px] text-accent-teal/60">tap to expand</span>
+        </Section>
+
+        <Section title="Advanced Trends" subtitle="Revenue, AOV, and product velocity over time" onExpand={() => setExpandedSection('Advanced Trends')}>
+          <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3 cursor-pointer hover:shadow-md hover:border-orange-400/15 transition-all duration-300 group/card" onClick={() => setExpandedSection('Advanced Trends')}>
+            <AdvancedTrends reports={filteredReports} />
+            <div className="text-center mt-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
+              <span className="text-[9px] text-orange-400/60">tap to expand</span>
+            </div>
           </div>
-        </div>
-      </Section>
+        </Section>
+      </div>
 
       {/* ─── WEEKDAY & CATEGORY ─── */}
       <Section title="Weekday & Category" subtitle="Order patterns by day and product category" onExpand={() => setExpandedSection('Weekday & Category')}>
@@ -405,7 +489,7 @@ export default function Dashboard() {
       {/* ─── STOCK INTELLIGENCE ─── */}
       <Section title="Stock Intelligence" subtitle="Restock recommendations and product health" count={products?.length} onExpand={() => setExpandedSection('Stock Intelligence')}>
         <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3 cursor-pointer hover:shadow-md hover:border-accent-rose/15 transition-all duration-300 group/card" onClick={() => setExpandedSection('Stock Intelligence')}>
-          <ProductIntelligence products={products} reports={sortedReports} />
+          <StockPreview products={products} reports={sortedReports} />
           <div className="text-center mt-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
             <span className="text-[9px] text-accent-rose/60">tap to expand</span>
           </div>
@@ -466,7 +550,9 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <WeeklyReport reports={filteredReports} loading={reportsLoading} />
               <MonthlyReport reports={filteredReports} loading={reportsLoading} />
-              <YearlyReport reports={sortedReports} loading={reportsLoading} />
+              <div className="sm:col-span-2">
+                <YearlyReport reports={sortedReports} loading={reportsLoading} />
+              </div>
             </div>
           )}
           {expandedSection === 'Weekday & Category' && (
