@@ -7,6 +7,7 @@ const navItems = [
   { path: '/analytics', label: 'Analytics', icon: '◉' },
   { path: '/products', label: 'Products', icon: '▣' },
   { path: '/alerts', label: 'Alerts', icon: '▲' },
+  { path: '/export', label: 'Export', icon: '↓' },
   { path: '/settings', label: 'Settings', icon: '⚙' },
 ];
 

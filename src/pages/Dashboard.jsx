@@ -1,9 +1,10 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { subDays, format } from 'date-fns';
 import { useReports } from '../hooks/useReports';
 import { useProducts } from '../hooks/useProducts';
 import { computeAlerts } from '../utils/analytics';
+import { generateReportPDF } from '../utils/pdfGenerator';
 import { formatBDTShort } from '../utils/formatters';
 import DynamicKPIs from '../components/Dashboard/DynamicKPIs';
 import RevenueChart from '../components/Dashboard/RevenueChart';
@@ -21,6 +22,7 @@ import WeeklyReport from '../components/Reports/WeeklyReport';
 import MonthlyReport from '../components/Reports/MonthlyReport';
 import Alert from '../components/UI/Alert';
 import DetailModal from '../components/UI/DetailModal';
+import RangePDF from '../components/Dashboard/RangePDF';
 import { CardSkeleton, ChartSkeleton } from '../components/UI/Loader';
 
 const RANGES = [
@@ -113,6 +115,7 @@ export default function Dashboard() {
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
   const [expandedSection, setExpandedSection] = useState(null);
+  const [exportingPDF, setExportingPDF] = useState(false);
 
   const sortedReports = useMemo(() => {
     if (!reports || reports.length === 0) return [];
@@ -149,6 +152,40 @@ export default function Dashboard() {
       ordChange,
     };
   }, [latestReport, previousReport]);
+
+  const rangeLabel = useMemo(() => {
+    if (range.type === 'today') return 'Today';
+    if (range.type === 'yesterday') return 'Yesterday';
+    if (range.type === '7d') return 'Last 7 Days';
+    if (range.type === '30d') return 'Last 30 Days';
+    if (range.type === 'custom' && range.start && range.end) return `${range.start} → ${range.end}`;
+    return 'All Reports';
+  }, [range]);
+
+  const rangeStartDate = useMemo(() => {
+    if (filteredReports.length === 0) return null;
+    const sorted = [...filteredReports].sort((a, b) => a.dateString.localeCompare(b.dateString));
+    return sorted[0]?.dateString;
+  }, [filteredReports]);
+
+  const rangeEndDate = useMemo(() => {
+    if (filteredReports.length === 0) return null;
+    const sorted = [...filteredReports].sort((a, b) => b.dateString.localeCompare(a.dateString));
+    return sorted[0]?.dateString;
+  }, [filteredReports]);
+
+  const handleExportPDF = useCallback(async () => {
+    if (filteredReports.length === 0) return;
+    setExportingPDF(true);
+    try {
+      const filename = `Anzaar-${rangeLabel.replace(/\s+/g, '-')}-${rangeStartDate || 'all'}.pdf`;
+      await generateReportPDF({ dateString: rangeStartDate }, 'range-pdf-content', filename);
+    } catch (err) {
+      console.error('PDF export failed:', err);
+    } finally {
+      setExportingPDF(false);
+    }
+  }, [filteredReports, rangeLabel, rangeStartDate]);
 
   if (reportsLoading) {
     return (
@@ -205,6 +242,27 @@ export default function Dashboard() {
         </div>
 
         <div className="flex items-center gap-1 flex-shrink-0">
+          {/* Export PDF Button */}
+          {filteredReports.length > 0 && (
+            <button
+              onClick={handleExportPDF}
+              disabled={exportingPDF}
+              className="flex items-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1.5 text-[10px] sm:text-[11px] font-medium text-accent-gold bg-accent-gold/5 hover:bg-accent-gold/10 border border-accent-gold/15 rounded-md transition-all disabled:opacity-40 mr-1"
+            >
+              {exportingPDF ? (
+                <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              ) : (
+                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              )}
+              <span className="hidden sm:inline">{exportingPDF ? '...' : 'Export'}</span>
+            </button>
+          )}
+
           <div className="flex gap-0.5 bg-bg-elevated/80 p-0.5 rounded-lg border border-border/60 shadow-sm">
             {RANGES.map(r => (
               <button key={r.value} onClick={() => { setRange({ type: r.value }); setShowCustom(false); }}
@@ -434,6 +492,16 @@ export default function Dashboard() {
           )}
         </div>
       </DetailModal>
+    )}
+
+    {/* Hidden Range PDF render */}
+    {filteredReports.length > 0 && (
+      <RangePDF
+        reports={filteredReports}
+        rangeLabel={rangeLabel}
+        startDate={rangeStartDate}
+        endDate={rangeEndDate}
+      />
     )}
     </>
   );

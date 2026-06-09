@@ -11,6 +11,7 @@ import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
 import Settings from './pages/Settings';
 import Alerts from './pages/Alerts';
+import PDFExport from './pages/PDFExport';
 import Loader from './components/UI/Loader';
 
 function ProtectedRoute({ children, user, allowed, loading }) {
@@ -128,6 +129,11 @@ export default function App() {
       <Route path="/alerts" element={
         <ProtectedRoute user={user} allowed={allowed} loading={loading}>
           <Alerts />
+        </ProtectedRoute>
+      } />
+      <Route path="/export" element={
+        <ProtectedRoute user={user} allowed={allowed} loading={loading}>
+          <PDFExport />
         </ProtectedRoute>
       } />
       <Route path="*" element={<Navigate to="/" replace />} />
