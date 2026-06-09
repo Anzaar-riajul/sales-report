@@ -5,9 +5,9 @@ export async function generateReportPDF(report, elementId, filename) {
   const element = document.getElementById(elementId);
   if (!element) throw new Error('PDF element not found');
 
-  // Phone-view width (400px) for readable mobile-style layout
+  // Render at phone width for crisp text
   const canvas = await html2canvas(element, {
-    scale: 2,
+    scale: 3,
     useCORS: true,
     logging: false,
     backgroundColor: '#FFFFFF',
@@ -15,22 +15,16 @@ export async function generateReportPDF(report, elementId, filename) {
   });
 
   const imgData = canvas.toDataURL('image/png');
-  const imgWidth = 210; // A4 width in mm
-  const pageHeight = 297; // A4 height in mm
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
-  let heightLeft = imgHeight;
-  let position = 0;
+  const pxWidth = canvas.width;
+  const pxHeight = canvas.height;
 
-  const pdf = new jsPDF('p', 'mm', 'a4');
-  pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-  heightLeft -= pageHeight;
+  // Phone-proportioned PDF: 75mm wide (matches ~375px phone)
+  const pdfWidth = 75;
+  const pdfHeight = (pxHeight * pdfWidth) / pxWidth;
 
-  while (heightLeft > 0) {
-    position = heightLeft - imgHeight;
-    pdf.addPage();
-    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
-  }
+  // Create custom-size PDF matching phone proportions
+  const pdf = new jsPDF('p', 'mm', [pdfWidth, pdfHeight]);
+  pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
 
   const dateStr = report?.dateString || new Date().toISOString().split('T')[0];
   pdf.save(filename || `Anzaar-Report-${dateStr}.pdf`);
