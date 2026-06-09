@@ -1,13 +1,21 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Card from '../UI/Card';
 import Badge from '../UI/Badge';
 import { parseReport } from '../../utils/parser';
 import { formatBDT, formatNumber } from '../../utils/formatters';
 
-export default function ReportPasteBox({ onSave, onPreview, existingReport, saving }) {
+export default function ReportPasteBox({ onSave, onPreview, existingReport, saving, clearTrigger }) {
   const [rawText, setRawText] = useState('');
   const [parsed, setParsed] = useState(null);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (clearTrigger) {
+      setRawText('');
+      setParsed(null);
+      setError(null);
+    }
+  }, [clearTrigger]);
 
   const handleParse = useCallback(() => {
     setError(null);
@@ -25,6 +33,7 @@ export default function ReportPasteBox({ onSave, onPreview, existingReport, savi
 
   const handleSave = useCallback(async () => {
     if (!parsed) return;
+    setError(null);
     try {
       await onSave(parsed);
     } catch (err) {
@@ -125,17 +134,25 @@ Online Order update: 08 June, 2026 (Monday)
             </div>
           )}
 
-          <div className="mt-4 pt-4 border-t border-border">
+          <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
             <button
               onClick={handleSave}
               disabled={saving || !parsed.dateString}
-              className="btn-primary text-sm"
+              className="btn-primary text-sm flex items-center gap-2"
             >
-              {saving ? 'Saving...' : existingReport ? 'Update Existing Report' : 'Save Report'}
+              {saving ? (
+                <>
+                  <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Saving...
+                </>
+              ) : existingReport ? 'Update Report' : 'Save Report'}
             </button>
             {existingReport && (
-              <p className="text-yellow-400 text-xs mt-2">
-                A report for {parsed.dateString} already exists. Saving will update it.
+              <p className="text-amber-600 text-xs">
+                Report for {parsed.dateString} exists. Update will replace it.
               </p>
             )}
           </div>

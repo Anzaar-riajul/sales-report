@@ -24,6 +24,7 @@ import Alert from '../components/UI/Alert';
 import { CardSkeleton, ChartSkeleton } from '../components/UI/Loader';
 
 const RANGES = [
+  { label: 'Today', value: 'today' },
   { label: '7d', value: 7 },
   { label: '30d', value: 30 },
   { label: '60d', value: 60 },
@@ -50,7 +51,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { reports, loading: reportsLoading } = useReports();
   const { products } = useProducts();
-  const [timeRange, setTimeRange] = useState(30);
+  const [timeRange, setTimeRange] = useState('today');
 
   const sortedReports = useMemo(() => {
     if (!reports || reports.length === 0) return [];
@@ -59,6 +60,7 @@ export default function Dashboard() {
 
   const filteredReports = useMemo(() => {
     if (timeRange === 'all') return sortedReports;
+    if (timeRange === 'today') return sortedReports.slice(0, 1);
     const cutoff = subDays(new Date(), timeRange);
     return sortedReports.filter(r => new Date(r.dateString) >= cutoff);
   }, [sortedReports, timeRange]);
@@ -75,7 +77,7 @@ export default function Dashboard() {
         <div className="flex items-center justify-between">
           <h2 className="font-semibold text-xl sm:text-2xl text-text-primary">Dashboard</h2>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-4">
+        <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
           {Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -110,7 +112,7 @@ export default function Dashboard() {
         <div>
           <h2 className="font-semibold text-xl sm:text-2xl text-text-primary">Dashboard</h2>
           <p className="text-xs text-text-muted mt-0.5">
-            {filteredReports.length} reports · Last {timeRange === 'all' ? 'all time' : `${timeRange} days`}
+            {filteredReports.length} reports · {timeRange === 'today' ? 'Today' : timeRange === 'all' ? 'All time' : `Last ${timeRange} days`}
           </p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
