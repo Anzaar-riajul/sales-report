@@ -7,7 +7,6 @@ import { computeAlerts, computeDailyReport } from '../utils/analytics';
 import DynamicKPIs from '../components/Dashboard/DynamicKPIs';
 import RevenueChart from '../components/Dashboard/RevenueChart';
 import OrderTypeChart from '../components/Dashboard/OrderTypeChart';
-import TopProductsTable from '../components/Dashboard/TopProductsTable';
 import WeekdayChart from '../components/Dashboard/WeekdayChart';
 import CategoryChart from '../components/Dashboard/CategoryChart';
 import ComparisonCards from '../components/Dashboard/ComparisonCards';
@@ -15,7 +14,7 @@ import RollingAvgChart from '../components/Dashboard/RollingAvgChart';
 import ProductIntelligence from '../components/Dashboard/ProductIntelligence';
 import AdvancedTrends from '../components/Dashboard/AdvancedTrends';
 import YearlyReport from '../components/Dashboard/YearlyReport';
-import ProductRanking from '../components/Products/ProductRanking';
+import ProductsOverview from '../components/Dashboard/ProductsOverview';
 import ReportHistory from '../components/Dashboard/ReportHistory';
 import DailyReport from '../components/Reports/DailyReport';
 import WeeklyReport from '../components/Reports/WeeklyReport';
@@ -239,14 +238,9 @@ export default function Dashboard() {
         <ComparisonCards reports={sortedReports} loading={reportsLoading} />
       </CollapsibleSection>
 
-      {/* ═══ PRODUCT RANKING ═══ */}
-      <CollapsibleSection title="Product Ranking" count={products?.length}>
-        <ProductRanking products={products} loading={reportsLoading} />
-      </CollapsibleSection>
-
-      {/* ═══ TODAY'S PRODUCTS ═══ */}
-      <CollapsibleSection title="Today's Products">
-        <TopProductsTable products={latestReport?.products || []} loading={reportsLoading} />
+      {/* ═══ PRODUCTS OVERVIEW ═══ */}
+      <CollapsibleSection title="Products" count={products?.length}>
+        <ProductsOverview products={products} reports={sortedReports} latestReport={latestReport} />
       </CollapsibleSection>
 
       {/* ═══ REPORT HISTORY ═══ */}
