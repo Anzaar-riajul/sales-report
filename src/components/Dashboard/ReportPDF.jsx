@@ -124,7 +124,7 @@ export default function ReportPDF({ report, allReports }) {
         background: `linear-gradient(135deg, ${T.gold}, ${T.gold}DD)`,
         padding: '28px 20px', color: T.white,
       }}>
-        <div style={{ fontSize: '14px', fontWeight: 600, opacity: 0.85, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Anzaar Islamic Lifestyle</div>
+        <div style={{ fontSize: '14px', fontWeight: 600, opacity: 0.85, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Anzaar Lifestyle</div>
         <div style={{ fontSize: '22px', fontWeight: 900, margin: '6px 0 0' }}>Daily Order Report</div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '14px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.2)' }}>
           <span style={{ fontSize: '24px', fontWeight: 800 }}>{report.dateString}</span>

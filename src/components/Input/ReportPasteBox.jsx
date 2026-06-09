@@ -110,7 +110,7 @@ export default function ReportPasteBox({ onSave, onPreview, existingReport, savi
               onChange={(e) => setRawText(e.target.value)}
               onFocus={() => setFocused(true)}
               onBlur={() => setFocused(false)}
-              placeholder={"Paste the daily order report here...\n\nExample:\nBismillahir Rahmanir Rahim\nAnzaar Islamic Lifestyle\nOnline Order update: 08 June, 2026 (Monday)\n Regular Order: 68 pcs Regular Product: 82 Pcs..."}
+              placeholder={"Paste the daily order report here...\n\nExample:\nBismillahir Rahmanir Rahim\nAnzaar Lifestyle\nOnline Order update: 08 June, 2026 (Monday)\n Regular Order: 68 pcs Regular Product: 82 Pcs..."}
               className="w-full h-56 sm:h-64 resize-y font-mono text-[13px] leading-relaxed bg-bg-elevated/30 border border-border/30 rounded-xl p-4 focus:outline-none focus:border-accent-gold/30 focus:bg-white/50 transition-all placeholder:text-text-muted/40"
               spellCheck={false}
             />

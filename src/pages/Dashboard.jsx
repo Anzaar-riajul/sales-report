@@ -579,7 +579,7 @@ export default function Dashboard() {
             <ComparisonCards reports={sortedReports} loading={reportsLoading} />
           )}
           {expandedSection === 'Products' && (
-            <ProductsOverview products={products} reports={sortedReports} latestReport={latestReport} />
+        <ProductsOverview products={products} reports={sortedReports} latestReport={latestReport} />
           )}
         </div>
       </DetailModal>

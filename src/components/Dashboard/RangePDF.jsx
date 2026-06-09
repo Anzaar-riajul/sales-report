@@ -141,7 +141,7 @@ export default function RangePDF({ reports, rangeLabel, startDate, endDate }) {
     >
       {/* Header */}
       <div style={{ background: `linear-gradient(135deg, ${T.gold}, ${T.gold}CC)`, padding: '28px 20px', color: T.white }}>
-        <div style={{ fontSize: '14px', fontWeight: 600, opacity: 0.85, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Anzaar Islamic Lifestyle</div>
+        <div style={{ fontSize: '14px', fontWeight: 600, opacity: 0.85, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Anzaar Lifestyle</div>
         <div style={{ fontSize: '20px', fontWeight: 900, margin: '4px 0 0' }}>Sales Report</div>
         <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.2)' }}>
           <div style={{ fontSize: '16px', fontWeight: 700 }}>{rangeLabel || `${formatDateShort(startDate)} → ${formatDateShort(endDate)}`}</div>
