@@ -9,9 +9,9 @@ export default function Layout({ children, user }) {
   return (
     <div className="min-h-screen bg-bg-primary">
       <Sidebar user={user} />
-      <div className="lg:ml-60 pb-16 lg:pb-0">
+      <div className="lg:ml-60 pb-14 lg:pb-0">
         <Header latestReport={latestReport} />
-        <main className="px-2 py-4 sm:px-3 sm:py-6">
+        <main className="px-2 pt-4 pb-1 sm:px-3 sm:pt-6 sm:pb-2">
           {children}
         </main>
       </div>
