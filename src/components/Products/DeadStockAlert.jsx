@@ -1,11 +1,15 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { subDays } from 'date-fns';
 import Card from '../UI/Card';
 import Badge from '../UI/Badge';
 import { TableSkeleton } from '../UI/Loader';
 import { formatDate } from '../../utils/formatters';
 
+const DEAD_STOCK_LIMIT = 5;
+
 export default function DeadStockAlert({ products, reports, loading }) {
+  const [showAll, setShowAll] = useState(false);
+
   const deadStock = useMemo(() => {
     if (!products || products.length === 0 || !reports || reports.length === 0) return [];
 
@@ -25,6 +29,8 @@ export default function DeadStockAlert({ products, reports, loading }) {
   }, [products, reports]);
 
   if (loading) return <Card><h3 className="section-title mb-4">Dead Stock Alert</h3><TableSkeleton rows={4} /></Card>;
+
+  const visible = showAll ? deadStock : deadStock.slice(0, DEAD_STOCK_LIMIT);
 
   return (
     <Card>
@@ -46,7 +52,7 @@ export default function DeadStockAlert({ products, reports, loading }) {
               </tr>
             </thead>
             <tbody>
-              {deadStock.map((product) => (
+              {visible.map((product) => (
                 <tr key={product.name} className="border-b border-border/50 last:border-0">
                   <td className="py-2.5 pr-2 text-text-primary font-medium">{product.name}</td>
                   <td className="py-2.5 pr-2">
@@ -60,6 +66,14 @@ export default function DeadStockAlert({ products, reports, loading }) {
               ))}
             </tbody>
           </table>
+          {deadStock.length > DEAD_STOCK_LIMIT && (
+            <button
+              onClick={() => setShowAll(!showAll)}
+              className="w-full mt-3 py-2 text-xs text-accent-rose hover:underline font-medium text-center"
+            >
+              {showAll ? 'Show less' : `See all ${deadStock.length} dead stock items`}
+            </button>
+          )}
         </div>
       )}
     </Card>

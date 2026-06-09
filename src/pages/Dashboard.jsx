@@ -606,22 +606,12 @@ export default function Dashboard() {
         </div>
       </Section>
 
-      {/* ─── ROLLING & TRENDS ─── */}
+      {/* ─── ROLLING AVERAGES ─── */}
       <Section title="Rolling Averages" subtitle="7/14/30-day moving trends" onExpand={() => setExpandedSection('Rolling Averages')}>
         <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3 cursor-pointer hover:shadow-md hover:border-purple-400/15 transition-all duration-300 group/card" onClick={() => setExpandedSection('Rolling Averages')}>
           <RollingAvgChart reports={filteredReports} loading={reportsLoading} />
           <div className="text-center mt-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
             <span className="text-[9px] text-purple-400/60">tap to expand</span>
-          </div>
-        </div>
-      </Section>
-
-      {/* ─── ADVANCED TRENDS ─── */}
-      <Section title="Advanced Trends" subtitle="Revenue, AOV, and product velocity over time" onExpand={() => setExpandedSection('Advanced Trends')}>
-        <div className="bg-gradient-to-br from-white via-white to-bg-elevated/20 rounded-2xl border border-border/30 p-2.5 sm:p-3 cursor-pointer hover:shadow-md hover:border-orange-400/15 transition-all duration-300 group/card" onClick={() => setExpandedSection('Advanced Trends')}>
-          <AdvancedTrends reports={filteredReports} />
-          <div className="text-center mt-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
-            <span className="text-[9px] text-orange-400/60">tap to expand</span>
           </div>
         </div>
       </Section>

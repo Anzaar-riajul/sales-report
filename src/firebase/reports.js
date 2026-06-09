@@ -20,10 +20,13 @@ export async function getReportByDate(dateString) {
 }
 
 export async function saveReport(parsedData, existingId = null) {
+  // Fetch saved category mappings for auto-assign
+  const categoryMappings = await getCategoryMappings();
+
   const products = parsedData.products.map(p => ({
     name: p.name,
     quantity: p.quantity || 0,
-    category: categorizeProduct(p.name),
+    category: categoryMappings[p.name] || categorizeProduct(p.name),
   }));
 
   const reportData = {
@@ -113,4 +116,23 @@ export async function getReportCount() {
 export async function updateProductCategory(productName, newCategory) {
   const ref = doc(db, PRODUCTS_COLLECTION, productName);
   await updateDoc(ref, { category: newCategory });
+  // Also save to category mappings for future auto-assign
+  await saveCategoryMapping(productName, newCategory);
+}
+
+const CATEGORY_MAP_COLLECTION = 'config';
+const CATEGORY_MAP_DOC = 'productCategoryMap';
+
+export async function saveCategoryMapping(productName, category) {
+  const ref = doc(db, CATEGORY_MAP_COLLECTION, CATEGORY_MAP_DOC);
+  const snap = await getDoc(ref);
+  const existing = snap.exists() ? (snap.data().mappings || {}) : {};
+  existing[productName] = category;
+  await updateDoc(ref, { mappings: existing });
+}
+
+export async function getCategoryMappings() {
+  const ref = doc(db, CATEGORY_MAP_COLLECTION, CATEGORY_MAP_DOC);
+  const snap = await getDoc(ref);
+  return snap.exists() ? (snap.data().mappings || {}) : {};
 }

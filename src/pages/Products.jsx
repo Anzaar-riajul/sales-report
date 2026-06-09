@@ -106,6 +106,14 @@ export default function Products() {
   const topSeller = useMemo(() => rankings[0] || null, [rankings]);
   const uniqueCategories = useMemo(() => new Set(rankings.map(p => p.category).filter(Boolean)).size, [rankings]);
 
+  const [showAllDeadStock, setShowAllDeadStock] = useState(false);
+  const [showAllNewProducts, setShowAllNewProducts] = useState(false);
+  const [showAllRanking, setShowAllRanking] = useState(false);
+
+  const DEAD_STOCK_LIMIT = 5;
+  const NEW_PRODUCTS_LIMIT = 6;
+  const RANKING_LIMIT = 8;
+
   const filtered = useMemo(() => {
     return rankings.filter(p => {
       if (categoryFilter !== 'all' && p.category !== categoryFilter) return false;
@@ -250,7 +258,7 @@ export default function Products() {
               <Badge variant="teal">{newProducts.length} new</Badge>
             </div>
             <div className="flex flex-wrap gap-2">
-              {newProducts.map((p, i) => (
+              {(showAllNewProducts ? newProducts : newProducts.slice(0, NEW_PRODUCTS_LIMIT)).map((p, i) => (
                 <button
                   key={p.name}
                   onClick={() => navigate(`/products/${encodeURIComponent(p.name)}`)}
@@ -261,6 +269,14 @@ export default function Products() {
                 </button>
               ))}
             </div>
+            {newProducts.length > NEW_PRODUCTS_LIMIT && (
+              <button
+                onClick={() => setShowAllNewProducts(!showAllNewProducts)}
+                className="mt-3 text-xs text-accent-teal hover:underline font-medium"
+              >
+                {showAllNewProducts ? 'Show less' : `See all ${newProducts.length} products`}
+              </button>
+            )}
           </Card>
         </div>
       )}
@@ -349,7 +365,7 @@ export default function Products() {
                   </tr>
                 </thead>
                 <tbody>
-                  {sorted.map((product, index) => {
+                  {(showAllRanking ? sorted : sorted.slice(0, RANKING_LIMIT)).map((product, index) => {
                     const isTop = index < 3;
                     const medals = ['🥇', '🥈', '🥉'];
                     return (
@@ -381,6 +397,14 @@ export default function Products() {
                   })}
                 </tbody>
               </table>
+              {sorted.length > RANKING_LIMIT && (
+                <button
+                  onClick={() => setShowAllRanking(!showAllRanking)}
+                  className="w-full mt-3 py-2 text-xs text-accent-gold hover:underline font-medium text-center"
+                >
+                  {showAllRanking ? 'Show less' : `See all ${sorted.length} products`}
+                </button>
+              )}
             </div>
           )}
         </Card>
