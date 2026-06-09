@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { formatBDT, formatBDTShort, formatNumber, formatPercent, formatDateShort } from '../../utils/formatters';
+import { subDays, subMonths, startOfDay, endOfDay, isWithinInterval, parseISO } from 'date-fns';
 import DetailModal from '../UI/DetailModal';
 
 const THEME = {
@@ -62,18 +63,56 @@ function TrendChart({ data, color, dataKey, height = 140 }) {
           formatter={(value) => [typeof value === 'number' && value > 999 ? formatBDT(value) : Math.round(value), '']}
           labelStyle={{ color: '#94A3B8', fontSize: '10px' }}
         />
-        <Area type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2.5} fill={`url(#trend-${dataKey})`} dot={false} activeDot={{ r: 5, fill: color, stroke: '#fff', strokeWidth: 2 }} />
+        <Area type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2.5} fill={`url(#trend-${dataKey})`} dot={false} activeDot={false} />
       </AreaChart>
     </ResponsiveContainer>
   );
 }
 
 function KpiModal({ open, onClose, metric, reports }) {
-  if (!metric || !open) return null;
+  const [range, setRange] = useState('all');
+  const [customStart, setCustomStart] = useState('');
+  const [customEnd, setCustomEnd] = useState('');
+
+  const filteredReports = useMemo(() => {
+    if (!reports) return [];
+    if (range === 'all') return reports;
+
+    const sorted = [...reports].sort((a, b) => new Date(a.dateString) - new Date(b.dateString));
+    const latest = sorted[sorted.length - 1];
+    const latestDate = latest ? parseISO(latest.dateString) : new Date();
+
+    let start, end;
+    if (range === 'today') {
+      start = startOfDay(latestDate);
+      end = endOfDay(latestDate);
+    } else if (range === 'yesterday') {
+      start = startOfDay(subDays(latestDate, 1));
+      end = endOfDay(subDays(latestDate, 1));
+    } else if (range === '7d') {
+      start = startOfDay(subDays(latestDate, 6));
+      end = endOfDay(latestDate);
+    } else if (range === '30d') {
+      start = startOfDay(subDays(latestDate, 29));
+      end = endOfDay(latestDate);
+    } else if (range === 'custom' && customStart && customEnd) {
+      start = startOfDay(parseISO(customStart));
+      end = endOfDay(parseISO(customEnd));
+    } else {
+      return reports;
+    }
+
+    return reports.filter(r => {
+      try {
+        const d = parseISO(r.dateString);
+        return isWithinInterval(d, { start, end });
+      } catch { return false; }
+    });
+  }, [reports, range, customStart, customEnd]);
 
   const trendData = useMemo(() => {
-    if (!reports) return [];
-    return [...reports].reverse().map(r => {
+    if (!filteredReports) return [];
+    return [...filteredReports].reverse().map(r => {
       let val = 0;
       if (metric.key === 'orders') val = r.totalOrder || 0;
       else if (metric.key === 'value') val = r.totalOrderValue || 0;
@@ -83,46 +122,49 @@ function KpiModal({ open, onClose, metric, reports }) {
       else if (metric.key === 'products') val = r.totalProduct || 0;
       return { date: formatDateShort(r.dateString), value: val };
     });
-  }, [reports, metric.key]);
+  }, [filteredReports, metric.key]);
 
   const breakdown = useMemo(() => {
-    if (!reports || reports.length === 0) return [];
+    if (!filteredReports || filteredReports.length === 0) return [];
     const items = [];
     if (metric.key === 'orders') {
-      items.push({ label: 'Regular Orders', value: reports.reduce((s, r) => s + (r.regularOrder || 0), 0) });
-      items.push({ label: 'Customize Orders', value: reports.reduce((s, r) => s + (r.customizeOrder || 0), 0) });
-      items.push({ label: 'Total Days', value: reports.length });
+      items.push({ label: 'Regular Orders', value: filteredReports.reduce((s, r) => s + (r.regularOrder || 0), 0) });
+      items.push({ label: 'Customize Orders', value: filteredReports.reduce((s, r) => s + (r.customizeOrder || 0), 0) });
+      items.push({ label: 'Total Days', value: filteredReports.length });
     } else if (metric.key === 'value') {
-      items.push({ label: 'Total Revenue', value: formatBDT(reports.reduce((s, r) => s + (r.totalOrderValue || 0), 0)) });
-      items.push({ label: 'Total Advance', value: formatBDT(reports.reduce((s, r) => s + (r.totalAdvance || 0), 0)) });
-      items.push({ label: 'Pending', value: formatBDT(reports.reduce((s, r) => s + (r.totalOrderValue || 0) - (r.totalAdvance || 0), 0)) });
+      items.push({ label: 'Total Revenue', value: formatBDT(filteredReports.reduce((s, r) => s + (r.totalOrderValue || 0), 0)) });
+      items.push({ label: 'Total Advance', value: formatBDT(filteredReports.reduce((s, r) => s + (r.totalAdvance || 0), 0)) });
+      items.push({ label: 'Pending', value: formatBDT(filteredReports.reduce((s, r) => s + (r.totalOrderValue || 0) - (r.totalAdvance || 0), 0)) });
     } else if (metric.key === 'advance') {
-      const totalVal = reports.reduce((s, r) => s + (r.totalOrderValue || 0), 0);
-      const totalAdv = reports.reduce((s, r) => s + (r.totalAdvance || 0), 0);
+      const totalVal = filteredReports.reduce((s, r) => s + (r.totalOrderValue || 0), 0);
+      const totalAdv = filteredReports.reduce((s, r) => s + (r.totalAdvance || 0), 0);
       items.push({ label: 'Advance Collected', value: formatBDT(totalAdv) });
       items.push({ label: 'Total Value', value: formatBDT(totalVal) });
       items.push({ label: 'Advance Rate', value: `${totalVal > 0 ? Math.round((totalAdv / totalVal) * 100) : 0}%` });
     } else if (metric.key === 'customize') {
-      const totalOrd = reports.reduce((s, r) => s + (r.totalOrder || 0), 0);
-      const totalCust = reports.reduce((s, r) => s + (r.customizeOrder || 0), 0);
+      const totalOrd = filteredReports.reduce((s, r) => s + (r.totalOrder || 0), 0);
+      const totalCust = filteredReports.reduce((s, r) => s + (r.customizeOrder || 0), 0);
       items.push({ label: 'Customize Orders', value: totalCust });
       items.push({ label: 'Regular Orders', value: totalOrd - totalCust });
       items.push({ label: 'Customize Rate', value: `${totalOrd > 0 ? Math.round((totalCust / totalOrd) * 100) : 0}%` });
     } else if (metric.key === 'products') {
-      const totalProd = reports.reduce((s, r) => s + (r.totalProduct || 0), 0);
-      const regProd = reports.reduce((s, r) => s + (r.regularProduct || 0), 0);
+      const totalProd = filteredReports.reduce((s, r) => s + (r.totalProduct || 0), 0);
+      const regProd = filteredReports.reduce((s, r) => s + (r.regularProduct || 0), 0);
       items.push({ label: 'Regular Products', value: regProd });
       items.push({ label: 'Customize Products', value: totalProd - regProd });
-      items.push({ label: 'Avg per Day', value: reports.length > 0 ? Math.round(totalProd / reports.length) : 0 });
+      items.push({ label: 'Avg per Day', value: filteredReports.length > 0 ? Math.round(totalProd / filteredReports.length) : 0 });
     } else if (metric.key === 'aov') {
-      const totalVal = reports.reduce((s, r) => s + (r.totalOrderValue || 0), 0);
-      const totalOrd = reports.reduce((s, r) => s + (r.totalOrder || 0), 0);
-      items.push({ label: 'Highest AOV', value: formatBDT(Math.max(...reports.map(r => r.totalOrder > 0 ? r.totalOrderValue / r.totalOrder : 0))) });
-      items.push({ label: 'Lowest AOV', value: formatBDT(Math.min(...reports.filter(r => r.totalOrder > 0).map(r => r.totalOrderValue / r.totalOrder))) });
+      const totalVal = filteredReports.reduce((s, r) => s + (r.totalOrderValue || 0), 0);
+      const totalOrd = filteredReports.reduce((s, r) => s + (r.totalOrder || 0), 0);
+      const aovs = filteredReports.filter(r => r.totalOrder > 0).map(r => r.totalOrderValue / r.totalOrder);
+      items.push({ label: 'Highest AOV', value: formatBDT(aovs.length > 0 ? Math.max(...aovs) : 0) });
+      items.push({ label: 'Lowest AOV', value: formatBDT(aovs.length > 0 ? Math.min(...aovs) : 0) });
       items.push({ label: 'Total Revenue', value: formatBDT(totalVal) });
     }
     return items;
-  }, [reports, metric.key]);
+  }, [filteredReports, metric.key]);
+
+  if (!metric || !open) return null;
 
   const t = THEME[metric.key];
 
@@ -139,6 +181,34 @@ function KpiModal({ open, onClose, metric, reports }) {
         </svg>
       }
     >
+      {/* Range filter */}
+      <div className="flex gap-1 mb-4 bg-bg-elevated/60 p-1 rounded-xl overflow-x-auto scrollbar-none">
+        {[
+          { key: 'today', label: 'Today' },
+          { key: 'yesterday', label: 'Yesterday' },
+          { key: '7d', label: '7d' },
+          { key: '30d', label: '30d' },
+          { key: 'all', label: 'All' },
+          { key: 'custom', label: '📅' },
+        ].map(r => (
+          <button key={r.key} onClick={() => setRange(r.key)}
+            className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold transition-all whitespace-nowrap flex-shrink-0 ${
+              range === r.key ? 'bg-white text-text-primary shadow-sm border border-border/30' : 'text-text-muted hover:text-text-primary'
+            }`}>
+            {r.label}
+          </button>
+        ))}
+      </div>
+      {range === 'custom' && (
+        <div className="flex items-center gap-2 mb-4">
+          <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)}
+            className="flex-1 text-[10px] px-2 py-1.5 border border-border/50 rounded-lg focus:outline-none focus:border-accent-gold/50 bg-white" />
+          <span className="text-[10px] text-text-muted">to</span>
+          <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)}
+            className="flex-1 text-[10px] px-2 py-1.5 border border-border/50 rounded-lg focus:outline-none focus:border-accent-gold/50 bg-white" />
+        </div>
+      )}
+
       {/* Big value */}
       <div className="text-center py-4 mb-4 bg-gradient-to-b from-bg-elevated/30 to-transparent rounded-2xl">
         <p className="text-3xl sm:text-4xl font-black tracking-tight" style={{ color: t.accent }}>

@@ -9,9 +9,9 @@ export default function Layout({ children, user, role }) {
   return (
     <div className="min-h-screen bg-bg-primary">
       <Sidebar user={user} role={role} />
-      <div className="lg:ml-60 pb-14 lg:pb-0">
+      <div className="lg:ml-60 pb-16 lg:pb-0">
         <Header latestReport={latestReport} user={user} role={role} />
-        <main className="px-2 pt-4 pb-1 sm:px-3 sm:pt-6 sm:pb-2">
+        <main className="px-2 pt-4 pb-0 sm:px-3 sm:pt-6 sm:pb-0">
           {children}
         </main>
       </div>

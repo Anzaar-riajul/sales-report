@@ -55,7 +55,7 @@ function RevenueOverview({ reports }) {
           <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" strokeOpacity={0.5} />
           <XAxis dataKey="date" tick={{ fontSize: 9, fill: '#64748B' }} interval="preserveStartEnd" axisLine={false} tickLine={false} />
           <YAxis tick={{ fontSize: 9, fill: '#64748B' }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} axisLine={false} tickLine={false} width={40} />
-          <Tooltip content={<TrendTooltip />} />
+          <Tooltip cursor={{ stroke: 'none' }} content={<TrendTooltip />} />
           <Area type="monotone" dataKey="Revenue" stroke="#C9A84C" strokeWidth={2} fill="url(#gradRev)" dot={false} />
           <Area type="monotone" dataKey="Advance" stroke="#0D9488" strokeWidth={2} fill="url(#gradAdv)" dot={false} />
         </AreaChart>
@@ -104,7 +104,7 @@ function OrderMix({ reports }) {
           <XAxis dataKey="date" tick={{ fontSize: 9, fill: '#64748B' }} interval="preserveStartEnd" axisLine={false} tickLine={false} />
           <YAxis yAxisId="left" tick={{ fontSize: 9, fill: '#64748B' }} axisLine={false} tickLine={false} width={30} />
           <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 9, fill: '#E11D48' }} domain={[0, 100]} tickFormatter={(v) => `${v}%`} axisLine={false} tickLine={false} width={35} />
-          <Tooltip content={<TrendTooltip />} />
+          <Tooltip cursor={{ stroke: 'none' }} content={<TrendTooltip />} />
           <Area yAxisId="left" type="monotone" dataKey="Regular" stroke="#C9A84C" strokeWidth={2} fill="url(#gradRegular)" />
           <Area yAxisId="left" type="monotone" dataKey="Customize" stroke="#E11D48" strokeWidth={2} fill="url(#gradCustom)" />
           <Line yAxisId="right" type="monotone" dataKey="Custom %" stroke="#E11D48" strokeWidth={1.5} strokeDasharray="4 3" dot={false} />
@@ -144,7 +144,7 @@ function PerformanceMetrics({ reports }) {
           <XAxis dataKey="date" tick={{ fontSize: 9, fill: '#64748B' }} interval="preserveStartEnd" axisLine={false} tickLine={false} />
           <YAxis yAxisId="left" tick={{ fontSize: 9, fill: '#64748B' }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} axisLine={false} tickLine={false} width={40} />
           <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 9, fill: '#C9A84C' }} domain={[0, 100]} tickFormatter={(v) => `${v}%`} axisLine={false} tickLine={false} width={35} />
-          <Tooltip content={<TrendTooltip />} />
+          <Tooltip cursor={{ stroke: 'none' }} content={<TrendTooltip />} />
           <Bar yAxisId="left" dataKey="AOV" fill="#3B82F6" fillOpacity={0.7} radius={[3, 3, 0, 0]} barSize={12} />
           <Line yAxisId="right" type="monotone" dataKey="Advance %" stroke="#C9A84C" strokeWidth={2} dot={false} />
         </ComposedChart>

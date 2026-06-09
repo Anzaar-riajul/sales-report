@@ -34,6 +34,7 @@ export default function MonthlyReport({ reports, loading }) {
           <XAxis dataKey="month" tick={{ fontSize: 11 }} />
           <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} />
           <Tooltip
+            cursor={{ stroke: 'none' }}
             contentStyle={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px' }}
             formatter={(value) => [formatBDT(value), 'Revenue']}
           />

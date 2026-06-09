@@ -25,7 +25,7 @@ export default function WeekdayChart({ reports, loading }) {
           <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" strokeOpacity={0.5} />
           <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#64748B' }} axisLine={false} tickLine={false} />
           <YAxis tick={{ fontSize: 10, fill: '#64748B' }} axisLine={false} tickLine={false} width={30} />
-          <Tooltip content={<WeekdayTooltip />} />
+          <Tooltip cursor={{ stroke: 'none' }} content={<WeekdayTooltip />} />
           <Bar dataKey="avgOrders" radius={[6, 6, 0, 0]} name="Avg Orders">
             {data.map((_, i) => <Cell key={i} fill={DAY_COLORS[i] || '#C9A84C'} fillOpacity={0.85} />)}
           </Bar>

@@ -28,7 +28,7 @@ function RollingLineChart({ data, color = '#C9A84C', gradientId = 'rollGrad' }) 
         <XAxis dataKey="date" tick={{ fontSize: 9, fill: '#94A3B8' }} interval="preserveStartEnd" axisLine={false} tickLine={false} />
         <YAxis tick={{ fontSize: 9, fill: '#94A3B8' }} axisLine={false} tickLine={false} width={30} />
         <Tooltip content={<RollingTooltip />} />
-        <Area type="monotone" dataKey="value" stroke={color} strokeWidth={2.5} fill={`url(#${gradientId})`} dot={false} activeDot={{ r: 4, fill: color, stroke: '#fff', strokeWidth: 2 }} />
+        <Area type="monotone" dataKey="value" stroke={color} strokeWidth={2.5} fill={`url(#${gradientId})`} dot={false} activeDot={false} />
       </AreaChart>
     </ResponsiveContainer>
   );

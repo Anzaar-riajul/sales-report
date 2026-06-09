@@ -33,7 +33,7 @@ export default function CategoryChart({ products, loading }) {
           <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" strokeOpacity={0.5} horizontal={false} />
           <XAxis type="number" tick={{ fontSize: 10, fill: '#64748B' }} axisLine={false} tickLine={false} />
           <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: '#0F172A', fontWeight: 500 }} width={75} axisLine={false} tickLine={false} />
-          <Tooltip content={<CatTooltip />} />
+          <Tooltip cursor={{ stroke: 'none' }} content={<CatTooltip />} />
           <Bar dataKey="totalQuantity" radius={[0, 6, 6, 0]} barSize={16} name="Qty Sold">
             {data.map((d, i) => <Cell key={i} fill={d.fill} fillOpacity={0.85} />)}
           </Bar>

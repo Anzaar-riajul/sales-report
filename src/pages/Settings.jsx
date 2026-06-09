@@ -1,14 +1,158 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useReports } from '../hooks/useReports';
 import { getSignupRequests, approveRequest, rejectRequest, addUserDirectly, getAllUsers, updateUserRole, removeUser } from '../firebase/auth';
 import DetailModal from '../components/UI/DetailModal';
+import RangePDF from '../components/Dashboard/RangePDF';
+import { formatBDT, formatNumber } from '../utils/formatters';
+import { subDays, format } from 'date-fns';
 
 const ROLE_OPTIONS = [
   { value: 'viewer', label: 'Viewer', icon: '👁', color: '#64748B', desc: 'Can view all data but cannot input or edit reports' },
   { value: 'admin', label: 'Admin', icon: '⚙', color: '#0D9488', desc: 'Can view data, input reports, and edit existing reports' },
   { value: 'super_admin', label: 'Super Admin', icon: '👑', color: '#C9A84C', desc: 'Full access including user management and settings' },
 ];
+
+const QUICK_RANGES = [
+  { label: 'Today', key: 'today', getRange: () => { const d = new Date(); return { start: format(d, 'yyyy-MM-dd'), end: format(d, 'yyyy-MM-dd') }; } },
+  { label: 'Yesterday', key: 'yesterday', getRange: () => { const d = subDays(new Date(), 1); return { start: format(d, 'yyyy-MM-dd'), end: format(d, 'yyyy-MM-dd') }; } },
+  { label: 'This Week', key: 'this_week', getRange: () => { const d = new Date(); const day = d.getDay(); const start = subDays(d, day === 0 ? 6 : day - 1); return { start: format(start, 'yyyy-MM-dd'), end: format(d, 'yyyy-MM-dd') }; } },
+  { label: 'Last 7d', key: '7d', getRange: () => ({ start: format(subDays(new Date(), 6), 'yyyy-MM-dd'), end: format(new Date(), 'yyyy-MM-dd') }) },
+  { label: 'Last 30d', key: '30d', getRange: () => ({ start: format(subDays(new Date(), 29), 'yyyy-MM-dd'), end: format(new Date(), 'yyyy-MM-dd') }) },
+  { label: 'Last 90d', key: '90d', getRange: () => ({ start: format(subDays(new Date(), 89), 'yyyy-MM-dd'), end: format(new Date(), 'yyyy-MM-dd') }) },
+  { label: 'All Time', key: 'all', getRange: () => null },
+];
+
+function ExportTab() {
+  const { reports, loading } = useReports();
+  const [quickRange, setQuickRange] = useState('all');
+  const [customStart, setCustomStart] = useState('');
+  const [customEnd, setCustomEnd] = useState('');
+  const [exporting, setExporting] = useState(false);
+
+  const filteredReports = useMemo(() => {
+    if (!reports) return [];
+    const range = QUICK_RANGES.find(r => r.key === quickRange);
+    if (quickRange === 'custom') {
+      if (!customStart || !customEnd) return reports;
+      return reports.filter(r => r.dateString >= customStart && r.dateString <= customEnd);
+    }
+    const rangeDates = range?.getRange();
+    if (!rangeDates) return reports;
+    return reports.filter(r => r.dateString >= rangeDates.start && r.dateString <= rangeDates.end);
+  }, [reports, quickRange, customStart, customEnd]);
+
+  const stats = useMemo(() => {
+    if (filteredReports.length === 0) return null;
+    const sorted = [...filteredReports].sort((a, b) => new Date(b.dateString) - new Date(a.dateString));
+    const totalRevenue = sorted.reduce((s, r) => s + (r.totalOrderValue || 0), 0);
+    const totalAdvance = sorted.reduce((s, r) => s + (r.totalAdvance || 0), 0);
+    return {
+      count: sorted.length,
+      totalRevenue,
+      totalAdvance,
+      startDate: sorted[sorted.length - 1]?.dateString,
+      endDate: sorted[0]?.dateString,
+    };
+  }, [filteredReports]);
+
+  const handleExport = async () => {
+    if (filteredReports.length === 0) return;
+    setExporting(true);
+    try {
+      const el = document.getElementById('range-pdf-render');
+      if (el) {
+        el.style.display = 'block';
+        el.dataset.render = Date.now().toString();
+      }
+      await new Promise(r => setTimeout(r, 500));
+    } catch (err) {
+      console.error('Export failed:', err);
+    }
+    setExporting(false);
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="bg-white/80 border border-border/30 rounded-2xl p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-accent-gold/15 to-amber-400/10 flex items-center justify-center">
+            <span className="text-sm">📥</span>
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-text-primary">Export PDF Reports</p>
+            <p className="text-[9px] text-text-muted">Generate phone-native PDF reports</p>
+          </div>
+        </div>
+
+        {/* Quick range buttons */}
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {QUICK_RANGES.map(r => (
+            <button key={r.key} onClick={() => setQuickRange(r.key)}
+              className={`px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all ${
+                quickRange === r.key
+                  ? 'bg-accent-gold text-white shadow-md'
+                  : 'bg-bg-elevated/60 text-text-muted hover:text-text-primary hover:bg-bg-elevated'
+              }`}>
+              {r.label}
+            </button>
+          ))}
+          <button onClick={() => setQuickRange('custom')}
+            className={`px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all ${
+              quickRange === 'custom'
+                ? 'bg-accent-gold text-white shadow-md'
+                : 'bg-bg-elevated/60 text-text-muted hover:text-text-primary hover:bg-bg-elevated'
+            }`}>
+            📅 Custom
+          </button>
+        </div>
+
+        {quickRange === 'custom' && (
+          <div className="flex items-center gap-2 mb-3">
+            <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)}
+              className="flex-1 text-[10px] px-2.5 py-2 border border-border/50 rounded-lg focus:outline-none focus:border-accent-gold/50 bg-white" />
+            <span className="text-[10px] text-text-muted">to</span>
+            <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)}
+              className="flex-1 text-[10px] px-2.5 py-2 border border-border/50 rounded-lg focus:outline-none focus:border-accent-gold/50 bg-white" />
+          </div>
+        )}
+
+        {/* Stats preview */}
+        {stats && (
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            <div className="bg-bg-elevated/30 rounded-xl p-2.5 text-center">
+              <p className="text-lg font-bold font-mono text-text-primary">{stats.count}</p>
+              <p className="text-[8px] text-text-muted">Reports</p>
+            </div>
+            <div className="bg-bg-elevated/30 rounded-xl p-2.5 text-center">
+              <p className="text-lg font-bold font-mono text-accent-gold">{formatBDT(stats.totalRevenue).slice(0, -3)}K</p>
+              <p className="text-[8px] text-text-muted">Revenue</p>
+            </div>
+            <div className="bg-bg-elevated/30 rounded-xl p-2.5 text-center">
+              <p className="text-lg font-bold font-mono text-accent-teal">{formatBDT(stats.totalAdvance).slice(0, -3)}K</p>
+              <p className="text-[8px] text-text-muted">Advance</p>
+            </div>
+          </div>
+        )}
+
+        <button onClick={handleExport} disabled={exporting || filteredReports.length === 0}
+          className="w-full py-3 bg-gradient-to-r from-accent-gold to-amber-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-accent-gold/25 hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-40 flex items-center justify-center gap-2">
+          {exporting ? (
+            <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Generating...</>
+          ) : (
+            <><svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg> Download PDF</>
+          )}
+        </button>
+      </div>
+
+      {/* Hidden Range PDF render */}
+      {filteredReports.length > 0 && (
+        <RangePDF reports={filteredReports} rangeLabel={QUICK_RANGES.find(r => r.key === quickRange)?.label || 'Custom Range'} />
+      )}
+    </div>
+  );
+}
 
 function UserCard({ u, currentUser, onRoleChange, onRemove, onClick }) {
   const role = ROLE_OPTIONS.find(r => r.value === u.role) || ROLE_OPTIONS[0];
@@ -291,6 +435,7 @@ export default function Settings() {
           { key: 'users', icon: '👥', label: 'Users', count: users.length },
           { key: 'requests', icon: '📩', label: 'Requests', count: requests.length },
           { key: 'add', icon: '➕', label: 'Add User' },
+          { key: 'export', icon: '📥', label: 'Export' },
         ].map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
             className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-[10px] font-semibold transition-all ${
@@ -416,6 +561,11 @@ export default function Settings() {
             </div>
           </button>
         </div>
+      )}
+
+      {/* Export Tab */}
+      {tab === 'export' && (
+        <ExportTab />
       )}
 
       {/* Account */}

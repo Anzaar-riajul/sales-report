@@ -74,6 +74,7 @@ export default function DailyReport({ reports, loading }) {
           <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94A3B8' }} interval="preserveStartEnd" axisLine={false} tickLine={false} />
           <YAxis tick={{ fontSize: 10, fill: '#94A3B8' }} axisLine={false} tickLine={false} width={30} />
           <Tooltip
+            cursor={{ stroke: 'none' }}
             contentStyle={{ background: 'rgba(255,255,255,0.95)', border: 'none', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}
           />
           <Bar dataKey="orders" fill="#C9A84C" radius={[4, 4, 0, 0]} name="Orders" />

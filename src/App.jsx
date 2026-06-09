@@ -143,11 +143,6 @@ export default function App() {
           <Alerts />
         </ProtectedRoute>
       } />
-      <Route path="/export" element={
-        <ProtectedRoute user={user} allowed={allowed} loading={loading} role={role}>
-          <PDFExport />
-        </ProtectedRoute>
-      } />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

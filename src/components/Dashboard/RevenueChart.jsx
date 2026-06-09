@@ -71,8 +71,8 @@ export default function RevenueChart({ reports, loading }) {
             <YAxis tick={{ fontSize: 10, fill: '#64748B' }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} axisLine={false} tickLine={false} width={40} />
             <Tooltip content={<RevTooltip />} />
             <Legend formatter={(v) => <span style={{ color: '#0F172A', fontSize: '11px' }}>{v}</span>} />
-            <Area type="monotone" dataKey="Revenue" stroke="#C9A84C" strokeWidth={2.5} fill="url(#gradRevLine)" dot={false} activeDot={{ r: 4, fill: '#C9A84C' }} />
-            <Area type="monotone" dataKey="Advance" stroke="#0D9488" strokeWidth={2.5} fill="url(#gradAdvLine)" dot={false} activeDot={{ r: 4, fill: '#0D9488' }} />
+            <Area type="monotone" dataKey="Revenue" stroke="#C9A84C" strokeWidth={2.5} fill="url(#gradRevLine)" dot={false} activeDot={false} />
+            <Area type="monotone" dataKey="Advance" stroke="#0D9488" strokeWidth={2.5} fill="url(#gradAdvLine)" dot={false} activeDot={false} />
           </AreaChart>
         </ResponsiveContainer>
       )}
