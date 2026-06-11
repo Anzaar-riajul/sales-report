@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { subDays } from 'date-fns';
-import { computeNewProducts, computeProductRankings, getProductLastSeen } from '../../utils/analytics';
+import { computeNewProducts, computeProductRankings } from '../../utils/analytics';
 import { formatBDT, formatDateShort } from '../../utils/formatters';
 import DetailModal from '../UI/DetailModal';
 
@@ -159,12 +159,11 @@ export default function ProductsOverview({ products, reports, latestReport }) {
     const sorted = [...reports].sort((a, b) => new Date(b.dateString) - new Date(a.dateString));
     const latest = sorted[0];
     if (!latest) return [];
-    const [y, m, d] = latest.dateString.split('-').map(Number);
-    const cutoff = subDays(new Date(y, m - 1, d), 7);
+    const cutoff = subDays(new Date(latest.dateString), 7);
     return products
       .filter(p => {
-        const lastSeen = getProductLastSeen(p);
-        if (!lastSeen) return true;
+        if (!p.lastSeenDate) return true;
+        const lastSeen = p.lastSeenDate.toDate ? p.lastSeenDate.toDate() : new Date(p.lastSeenDate);
         return lastSeen < cutoff;
       })
       .sort((a, b) => (a.totalQuantitySold || 0) - (b.totalQuantitySold || 0))

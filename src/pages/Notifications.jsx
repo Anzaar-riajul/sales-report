@@ -8,7 +8,6 @@ import {
   getNotifications, getSeenIds, markSeen as storeMarkSeen,
   markAllSeen, generateAndStoreNotifications
 } from '../utils/notifications';
-import { getProductLastSeen } from '../utils/analytics';
 
 const SEVERITY = {
   critical: { icon: '🔴', color: '#E11D48', bg: 'from-rose-50 to-red-50', border: 'border-rose-200', label: 'Critical' },
@@ -106,8 +105,8 @@ function generateNotifications(reports, products) {
   if (products && products.length > 0) {
     const cutoff = subDays(now, 14);
     const deadStock = products.filter(p => {
-      const lastSeen = getProductLastSeen(p);
-      if (!lastSeen) return true;
+      if (!p.lastSeenDate) return true;
+      const lastSeen = p.lastSeenDate.toDate ? p.lastSeenDate.toDate() : new Date(p.lastSeenDate);
       return lastSeen < cutoff;
     });
     if (deadStock.length > 3) {

@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { subDays, format } from 'date-fns';
 import { useReports } from '../hooks/useReports';
 import { useProducts } from '../hooks/useProducts';
-import { computeRollingAverage, computeWeekdayAnalysis, computeWeekOverWeekGrowth, computeMTDComparison, getProductLastSeen } from '../utils/analytics';
+import { computeRollingAverage, computeWeekdayAnalysis, computeWeekOverWeekGrowth, computeMTDComparison } from '../utils/analytics';
 import { formatBDT, formatDateShort, formatNumber, formatBDTShort } from '../utils/formatters';
 import DetailModal from '../components/UI/DetailModal';
 
@@ -153,9 +153,7 @@ export default function Alerts() {
     // 5. Dead stock alerts
     if (products && products.length > 0) {
       const deadStock = products.filter(p => {
-        const lastSeen = getProductLastSeen(p);
-        if (!lastSeen) return false;
-        const daysSince = Math.floor((Date.now() - lastSeen.getTime()) / 86400000);
+        const daysSince = Math.floor((Date.now() - new Date(p.lastSeenDate).getTime()) / 86400000);
         return daysSince > 14 && p.totalQuantitySold > 0;
       });
       if (deadStock.length > 0) {
@@ -348,7 +346,7 @@ export default function Alerts() {
                 <p className="text-xs font-medium text-text-primary truncate">{p.name}</p>
                 <p className="text-[9px] text-text-muted">{p.category || 'Other'} · {p.totalQuantitySold} sold total</p>
               </div>
-              <span className="text-[10px] font-mono text-accent-rose">Last: {formatDateShort(getProductLastSeen(p)?.toISOString().slice(0,10))}</span>
+              <span className="text-[10px] font-mono text-accent-rose">Last: {formatDateShort(p.lastSeenDate)}</span>
             </div>
           ))}
         </div>

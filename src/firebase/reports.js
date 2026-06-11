@@ -112,7 +112,7 @@ export async function saveReport(parsedData, existingId = null) {
 
   batch.set(reportRef, reportData, { merge: !!existingId });
 
-  const dateTimestamp = Timestamp.fromDate(parsedData.date || new Date(parsedData.dateString + 'T00:00:00'));
+  const dateTimestamp = Timestamp.fromDate(parseFlexibleDate(parsedData.dateString));
 
   for (const product of products) {
     const productRef = doc(db, PRODUCTS_COLLECTION, product.name);
@@ -136,10 +136,7 @@ export async function getProducts() {
   return snapshot.docs.map(doc => {
     const data = doc.data();
     const { dailyHistory, ...rest } = data;
-    const lastDateFromHistory = dailyHistory?.length > 0
-      ? dailyHistory.map(h => h.date).sort().pop()
-      : null;
-    return { id: doc.id, ...rest, _lastSeenDate: lastDateFromHistory };
+    return { id: doc.id, ...rest };
   });
 }
 

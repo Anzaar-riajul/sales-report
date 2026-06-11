@@ -1,10 +1,9 @@
 import { subDays, isWithinInterval, parseISO } from 'date-fns';
-import { getProductLastSeen } from './analytics';
 
-function getDaysSince(product) {
-  const lastSeen = getProductLastSeen(product);
-  if (!lastSeen) return Infinity;
-  return Math.floor((new Date() - lastSeen) / (1000 * 60 * 60 * 24));
+function getDaysSince(dateValue) {
+  if (!dateValue) return Infinity;
+  const d = dateValue.toDate ? dateValue.toDate() : new Date(dateValue);
+  return Math.floor((new Date() - d) / (1000 * 60 * 60 * 24));
 }
 
 function getRecentHistory(product, days) {
@@ -23,7 +22,7 @@ export function computeStockRecommendations(products, reports) {
 
   const recommendations = products.map(product => {
     const history = (product.dailyHistory || []).sort((a, b) => b.date.localeCompare(a.date));
-    const daysSinceLastSale = getDaysSince(product);
+    const daysSinceLastSale = getDaysSince(product.lastSeenDate);
     const recent14 = getRecentHistory(product, 14);
     const recent7 = getRecentHistory(product, 7);
     const recent30 = getRecentHistory(product, 30);

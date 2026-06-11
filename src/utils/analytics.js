@@ -1,15 +1,5 @@
 import { format, parseISO, subDays, startOfWeek, isSameDay, isWithinInterval, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 
-export function getProductLastSeen(product) {
-  if (product.lastSeenDate) {
-    return product.lastSeenDate.toDate ? product.lastSeenDate.toDate() : new Date(product.lastSeenDate);
-  }
-  if (product._lastSeenDate) {
-    return new Date(product._lastSeenDate + 'T00:00:00');
-  }
-  return null;
-}
-
 export function computeAlerts(allReports, allProducts) {
   const alerts = [];
   if (!allReports || allReports.length === 0) return alerts;
@@ -58,8 +48,8 @@ export function computeAlerts(allReports, allProducts) {
     const weekAgo = subDays(now, 7);
 
     const deadStock = allProducts.filter(p => {
-      const lastSeen = getProductLastSeen(p);
-      if (!lastSeen) return false;
+      if (!p.lastSeenDate) return false;
+      const lastSeen = p.lastSeenDate.toDate ? p.lastSeenDate.toDate() : new Date(p.lastSeenDate);
       return lastSeen < weekAgo;
     });
 

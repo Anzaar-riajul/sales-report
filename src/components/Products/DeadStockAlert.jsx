@@ -4,7 +4,6 @@ import Card from '../UI/Card';
 import Badge from '../UI/Badge';
 import { TableSkeleton } from '../UI/Loader';
 import { formatDate } from '../../utils/formatters';
-import { getProductLastSeen } from '../../utils/analytics';
 
 const DEAD_STOCK_LIMIT = 5;
 
@@ -18,13 +17,12 @@ export default function DeadStockAlert({ products, reports, loading }) {
     const latest = sorted[0];
     if (!latest) return [];
 
-    const [y, m, d] = latest.dateString.split('-').map(Number);
-    const cutoff = subDays(new Date(y, m - 1, d), 7);
+    const cutoff = subDays(new Date(latest.dateString), 7);
 
     return products
       .filter(p => {
-        const lastSeen = getProductLastSeen(p);
-        if (!lastSeen) return true;
+        if (!p.lastSeenDate) return true;
+        const lastSeen = p.lastSeenDate.toDate ? p.lastSeenDate.toDate() : new Date(p.lastSeenDate);
         return lastSeen < cutoff;
       })
       .sort((a, b) => (a.totalQuantitySold || 0) - (b.totalQuantitySold || 0));
