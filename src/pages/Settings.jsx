@@ -208,6 +208,7 @@ export default function Settings() {
   const [addMsg, setAddMsg] = useState('');
   const [addError, setAddError] = useState('');
   const [modal, setModal] = useState(null);
+  const [toast, setToast] = useState(null);
   const tabRef = useRef(null);
 
   const loadData = async () => {
@@ -230,8 +231,13 @@ export default function Settings() {
   }, [tab]);
 
   const handleApprove = async (req) => {
-    await approveRequest(req.id, req.uid, req.email);
-    loadData();
+    try {
+      await approveRequest(req.id, req.uid, req.email);
+      setToast({ type: 'success', message: `${req.email || req.uid} approved!` });
+      loadData();
+    } catch (err) {
+      setToast({ type: 'error', message: err.message || 'Approve failed' });
+    }
   };
 
   const handleReject = async (req) => {
@@ -382,6 +388,16 @@ export default function Settings() {
 
   return (
     <div className="max-w-2xl mx-auto px-3 sm:px-4 py-4 space-y-4 animate-fade-in">
+      {toast && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-2xl text-sm font-medium transition-all ${
+          toast.type === 'error'
+            ? 'bg-accent-rose/10 border border-accent-rose/20 text-accent-rose'
+            : 'bg-accent-teal/10 border border-accent-teal/20 text-accent-teal'
+        }`}>
+          {toast.message}
+          <button onClick={() => setToast(null)} className="ml-3 opacity-50 hover:opacity-100">&times;</button>
+        </div>
+      )}
       {/* Header */}
       <div className="relative overflow-hidden bg-gradient-to-br from-accent-gold to-amber-500 rounded-2xl p-5 text-white shadow-lg shadow-accent-gold/20">
         <div className="absolute -top-8 -right-8 w-32 h-32 bg-white/8 rounded-full" />
