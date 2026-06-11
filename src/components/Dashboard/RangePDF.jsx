@@ -319,7 +319,7 @@ export default function RangePDF({ reports, rangeLabel, startDate, endDate }) {
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: '10px', fontWeight: 800, fontFamily: 'monospace', flexShrink: 0,
                     }}>{i + 1}</span>
-                    <span style={{ fontSize: '13px', color: T.text, lineHeight: '1.4' }}>{p.name}</span>
+                    <span style={{ fontSize: '13px', color: T.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
                     <span style={{ fontSize: '10px', color: T.muted, background: T.bg, padding: '2px 6px', borderRadius: '6px' }}>{p.category}</span>
@@ -343,10 +343,32 @@ export default function RangePDF({ reports, rangeLabel, startDate, endDate }) {
                   borderBottom: i < deadProducts.length - 1 ? `1px solid ${T.border}25` : 'none',
                 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: '13px', color: T.text, lineHeight: '1.4' }}>{p.name}</div>
+                    <div style={{ fontSize: '13px', color: T.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
                     <div style={{ fontSize: '10px', color: T.muted }}>{p.category}</div>
                   </div>
                   <span style={{ fontSize: '10px', color: T.rose, fontFamily: 'monospace', flexShrink: 0 }}>Last: {p.lastSeen}</span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Daily Breakdown */}
+        {days > 1 && (
+          <>
+            <SectionHeader icon="📋" title="Daily Breakdown" color={T.muted} />
+            <div style={{ border: `2px solid ${T.border}40`, borderRadius: '14px', overflow: 'hidden', marginBottom: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 1fr', background: T.bg, borderBottom: `2px solid ${T.border}40` }}>
+                {['Date', 'Ord', 'Value', 'Adv'].map(h => (
+                  <span key={h} style={{ padding: '6px 8px', fontSize: '9px', fontWeight: 700, color: T.muted, textTransform: 'uppercase', textAlign: h === 'Date' ? 'left' : 'right' }}>{h}</span>
+                ))}
+              </div>
+              {sorted.map((r, i) => (
+                <div key={r.dateString} style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr 1fr', background: i % 2 === 0 ? T.bg : T.white, borderBottom: i < sorted.length - 1 ? `1px solid ${T.border}25` : 'none' }}>
+                  <span style={{ padding: '6px 8px', fontSize: '11px', color: T.text, fontWeight: 600 }}>{formatDateShort(r.dateString)}</span>
+                  <span style={{ padding: '6px 8px', fontSize: '11px', fontFamily: 'monospace', textAlign: 'right' }}>{r.totalOrder}</span>
+                  <span style={{ padding: '6px 8px', fontSize: '11px', fontFamily: 'monospace', textAlign: 'right', color: T.gold, fontWeight: 700 }}>{formatBDT(r.totalOrderValue)}</span>
+                  <span style={{ padding: '6px 8px', fontSize: '11px', fontFamily: 'monospace', textAlign: 'right', color: T.teal }}>{formatBDT(r.totalAdvance)}</span>
                 </div>
               ))}
             </div>
