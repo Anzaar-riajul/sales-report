@@ -16,7 +16,7 @@ export async function getUserRole(uid) {
     const snap = await getDoc(docRef);
     if (!snap.exists()) return null;
     const data = snap.data();
-    return data.roles?.[uid] || null;
+    return data.roles?.[uid] || 'viewer';
   } catch {
     return null;
   }
@@ -30,7 +30,7 @@ export async function isUserAllowed(uid) {
     const snap = await getDoc(docRef);
     if (!snap.exists()) return false;
     const data = snap.data();
-    return data.uids?.includes(uid) && !!data.roles?.[uid];
+    return data.uids?.includes(uid);
   } catch {
     return false;
   }
