@@ -235,8 +235,8 @@ function ExportTab() {
               )}
             </div>
             <div className="flex-1 text-left">
-              <p className="text-sm font-bold text-gray-900">JPG — Mobile View</p>
-              <p className="text-[11px] text-gray-400 mt-0.5">Narrow format, full report height</p>
+              <p className="text-sm font-bold text-gray-900">JPG — Mobile Friendly</p>
+              <p className="text-[11px] text-gray-400 mt-0.5">600px wide, full report height, share-ready</p>
             </div>
             <svg className="w-5 h-5 text-gray-300 group-hover:text-gray-500 group-hover:translate-x-1 transition-all" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
