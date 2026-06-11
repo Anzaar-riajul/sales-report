@@ -100,12 +100,12 @@ export async function getSignupRequests() {
 export async function approveRequest(requestId, uid, email) {
   try {
     const allowedRef = doc(db, 'config', 'allowedUsers');
-    await setDoc(allowedRef, {
+    await updateDoc(allowedRef, {
       uids: arrayUnion(uid),
       [`roles.${uid}`]: 'viewer',
       [`profiles.${uid}.email`]: email || '',
       [`profiles.${uid}.addedAt`]: new Date().toISOString(),
-    }, { merge: true });
+    });
     await deleteDoc(doc(db, 'signupRequests', requestId));
     return { success: true };
   } catch (error) {
@@ -127,12 +127,12 @@ export async function rejectRequest(requestId) {
 export async function addUserDirectly(uid, email, role = 'viewer') {
   try {
     const allowedRef = doc(db, 'config', 'allowedUsers');
-    await setDoc(allowedRef, {
+    await updateDoc(allowedRef, {
       uids: arrayUnion(uid),
       [`roles.${uid}`]: role,
       [`profiles.${uid}.email`]: email || '',
       [`profiles.${uid}.addedAt`]: new Date().toISOString(),
-    }, { merge: true });
+    });
     return { success: true };
   } catch (error) {
     console.error('Error adding user directly:', error);
