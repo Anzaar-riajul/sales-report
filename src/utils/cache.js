@@ -1,5 +1,5 @@
 const CACHE_PREFIX = 'anzaar_cache_';
-const CACHE_VERSION = 3;
+const CACHE_VERSION = 2;
 const VERSION_KEY = CACHE_PREFIX + 'version';
 const DEFAULT_TTL = 30 * 60 * 1000;
 

@@ -1,12 +1,11 @@
 import { format, parseISO, subDays, startOfWeek, isSameDay, isWithinInterval, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 
 export function getProductLastSeen(product) {
-  // _lastSeenDate from dailyHistory is always correct; prefer it
-  if (product._lastSeenDate) {
-    return new Date(product._lastSeenDate + 'T00:00:00');
-  }
   if (product.lastSeenDate) {
     return product.lastSeenDate.toDate ? product.lastSeenDate.toDate() : new Date(product.lastSeenDate);
+  }
+  if (product._lastSeenDate) {
+    return new Date(product._lastSeenDate + 'T00:00:00');
   }
   return null;
 }
