@@ -281,7 +281,7 @@ function Greeting() {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { reports, loading: reportsLoading } = useReports();
+  const { reports, loading: reportsLoading, error: reportsError } = useReports();
   const { products } = useProducts();
   const [range, setRange] = useState({ type: '7d' });
   const [showCustom, setShowCustom] = useState(false);
@@ -349,6 +349,12 @@ export default function Dashboard() {
     return (
       <div className="flex items-center justify-center min-h-[60vh] animate-fade-in">
         <div className="glass-card p-8 sm:p-12 text-center max-w-md w-full">
+          {reportsError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600 text-xs font-medium mb-1">⚠ Error loading reports:</p>
+              <p className="text-red-500 text-xs">{reportsError}</p>
+            </div>
+          )}
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent-gold/20 to-accent-gold/5 border border-accent-gold/20 flex items-center justify-center mx-auto mb-5">
             <span className="text-2xl text-accent-gold">+</span>
           </div>
