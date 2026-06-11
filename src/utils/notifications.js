@@ -1,6 +1,7 @@
 import { getCache, setCache } from './cache';
 
 const NOTIF_KEY = 'anzaar_notifications';
+import { getProductLastSeen } from './analytics';
 const NOTIF_SEEN_KEY = 'anzaar_notifs_seen';
 const NOTIF_GENERATED_KEY = 'anzaar_notifs_generated';
 
@@ -135,8 +136,8 @@ export function generateAndStoreNotifications(reports, products) {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 14);
     const deadStock = products.filter(p => {
-      if (!p.lastSeenDate) return true;
-      const lastSeen = p.lastSeenDate.toDate ? p.lastSeenDate.toDate() : new Date(p.lastSeenDate);
+      const lastSeen = getProductLastSeen(p);
+      if (!lastSeen) return true;
       return lastSeen < cutoff;
     });
     if (deadStock.length > 3 && !existingIds.has('dead_stock_' + latest.dateString)) {
